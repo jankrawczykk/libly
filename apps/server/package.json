@@ -9,6 +9,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@fastify/helmet": "13.2.0",
     "fastify": "5.12.8",
     "zod": "4.6.7"
   },

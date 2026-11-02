@@ -36,11 +36,11 @@ Plan funkcji jest rozłożony na etapy. Aktualny stan znajdziesz w sekcji Roadma
 
 Bezpieczeństwo jest najważniejszym założeniem projektu.
 
-* **Wszystko dzieje się na Twoim komputerze.** Serwer aplikacji nasłuchuje tylko na `127.0.0.1`, więc nie jest widoczny w Twojej sieci.
+* **Wszystko dzieje się na Twoim komputerze.** Domyślnie serwer aplikacji nasłuchuje tylko na `127.0.0.1`, a nieprawidłowe nagłówki `Host` są odrzucane.
 * **Hasło nie jest zapisywane.** Trafia do lokalnego serwera tylko po to, żeby zalogować się do Librusa, a zaraz potem jest porzucane. Nie ma bazy danych, plików z danymi ani zapisu w `localStorage`.
 * **Dane trzymamy tylko w pamięci** i znikają po wylogowaniu, po wygaśnięciu sesji albo po zamknięciu aplikacji.
 * **Jedyny ruch wychodzący idzie do Librusa.** Brak analityki, telemetrii, zewnętrznych czcionek i skryptów z internetu.
-* **Zabezpieczenia przeglądarkowe.** Restrykcyjne nagłówki (CSP), sprawdzanie nagłówków Host i Origin oraz ciasteczko sesji `HttpOnly` i `SameSite=Strict`.
+* **Zabezpieczenia przeglądarkowe.** Restrykcyjne nagłówki (CSP), sprawdzanie nagłówków `Host` i `Origin` przy żądaniach zmieniających stan oraz `Cache-Control: no-store` dla API.
 * **Aplikacja tylko czyta.** Nie wysyła ani nie usuwa wiadomości i niczego nie zmienia na Twoim koncie.
 * **Uczciwe zastrzeżenie.** JavaScript nie pozwala w pełni wyczyścić pamięci, więc nie obiecujemy zerowania haseł w RAM. Obiecujemy, że hasło nigdy nie trafia na dysk ani do sieci poza Librusem.
 
