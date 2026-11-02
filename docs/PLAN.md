@@ -252,6 +252,8 @@ With `p` present lessons, `n` counted lessons, and threshold `t` as a fraction, 
 x <= p / t - n        (floor it, minimum 0)
 ```
 
+The threshold `t` is the configured percentage divided by 100. If the threshold is zero, the absence buffer is unlimited. If no lessons have been counted, the result is unavailable rather than a guessed number.
+
 ### Recovery (how many lessons must I attend to get back above the threshold)
 
 If currently below `t`, attending `y` more lessons in a row gives `(p + y) / (n + y) >= t`, so
@@ -260,7 +262,9 @@ If currently below `t`, attending `y` more lessons in a row gives `(p + y) / (n 
 y >= (t * n - p) / (1 - t)      (ceil it)
 ```
 
-If `t` is 1, recovery is impossible when any absence exists, so return `null`.
+If `t` is 1, recovery is impossible when any absence exists. The core result distinguishes this from missing data.
+
+If there are no counted lessons, the recovery requirement is unavailable. If attendance is already at or above the threshold, the requirement is zero.
 
 ### Weighted grade average
 
