@@ -135,6 +135,15 @@ describe('domain schemas', () => {
     ).toBe(false)
   })
 
+  test('allows an unconfigured term structure without inventing school dates', () => {
+    expect(
+      TermStructureSchema.safeParse({
+        type: 'semesters',
+        terms: [],
+      }).success,
+    ).toBe(true)
+  })
+
   test('validates the current profile during migration', () => {
     expect(migrateSchoolProfile(validProfile)).toEqual(validProfile)
     expect(() => migrateSchoolProfile({ ...validProfile, version: 2 })).toThrow(

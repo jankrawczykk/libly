@@ -1,0 +1,33 @@
+{
+  "label": "Typowe wartości, sprawdź statut swojej szkoły",
+  "profile": {
+    "version": 1,
+    "schoolType": "general_lyceum",
+    "attendance": {
+      "criticalThreshold": 50,
+      "warningThreshold": 60,
+      "scope": "per_subject",
+      "period": "semester",
+      "countLateAsPresent": true,
+      "countExcusedAsPresent": false,
+      "excludedKinds": ["exempt", "school_trip"],
+      "symbolMap": {}
+    },
+    "grades": {
+      "scale": "one_to_six",
+      "plusOffset": 0.5,
+      "minusOffset": -0.25,
+      "averageMethod": "weighted",
+      "includeBehaviorInAverage": false,
+      "distinctionAverage": 4.75,
+      "distinctionMinBehavior": "bardzo dobre",
+      "workPlacementHandling": "exclude_from_average",
+      "practicalClassesHandling": "exclude_from_average"
+    },
+    "terms": {
+      "type": "semesters",
+      "terms": []
+    },
+    "subjectRules": []
+  }
+}

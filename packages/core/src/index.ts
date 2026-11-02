@@ -1,4 +1,11 @@
 import { z } from 'zod'
+import primaryPreset from '../presets/primary.json' with { type: 'json' }
+import generalLyceumPreset from '../presets/general_lyceum.json' with { type: 'json' }
+import technikumPreset from '../presets/technikum.json' with { type: 'json' }
+import vocationalStage1Preset from '../presets/vocational_stage1.json' with { type: 'json' }
+import vocationalStage2Preset from '../presets/vocational_stage2.json' with { type: 'json' }
+import postSecondaryPreset from '../presets/post_secondary.json' with { type: 'json' }
+import otherPreset from '../presets/other.json' with { type: 'json' }
 
 export const CURRENT_SCHOOL_PROFILE_VERSION = 1
 
@@ -58,6 +65,16 @@ export const SCHOOL_TYPES = [
 
 export const SchoolTypeSchema = z.enum(SCHOOL_TYPES)
 export type SchoolType = z.infer<typeof SchoolTypeSchema>
+
+const SCHOOL_PROFILE_PRESETS: Record<SchoolType, unknown> = {
+  primary: primaryPreset,
+  general_lyceum: generalLyceumPreset,
+  technikum: technikumPreset,
+  vocational_stage1: vocationalStage1Preset,
+  vocational_stage2: vocationalStage2Preset,
+  post_secondary: postSecondaryPreset,
+  other: otherPreset,
+}
 
 export const SUBJECT_CATEGORIES = [
   'general',
@@ -166,7 +183,7 @@ export type Term = z.infer<typeof TermSchema>
 export const TermStructureSchema = z
   .object({
     type: z.enum(['semesters', 'trimesters', 'custom']),
-    terms: z.array(TermSchema).min(1),
+    terms: z.array(TermSchema),
   })
   .strict()
 export type TermStructure = z.infer<typeof TermStructureSchema>
@@ -183,6 +200,14 @@ export const SchoolProfileSchema = z
   })
   .strict()
 export type SchoolProfile = z.infer<typeof SchoolProfileSchema>
+
+export const SchoolProfilePresetSchema = z
+  .object({
+    label: nonBlankString,
+    profile: SchoolProfileSchema,
+  })
+  .strict()
+export type SchoolProfilePreset = z.infer<typeof SchoolProfilePresetSchema>
 
 export class UnsupportedSchoolProfileVersionError extends Error {
   constructor() {
@@ -202,4 +227,20 @@ export function migrateSchoolProfile(input: unknown): SchoolProfile {
   }
 
   return SchoolProfileSchema.parse(input)
+}
+
+export function getSchoolProfilePreset(
+  schoolType: SchoolType,
+): SchoolProfilePreset {
+  const preset = SchoolProfilePresetSchema.parse(
+    SCHOOL_PROFILE_PRESETS[schoolType],
+  )
+
+  if (preset.profile.schoolType !== schoolType) {
+    throw new Error(
+      'School profile preset does not match the requested school type',
+    )
+  }
+
+  return preset
 }
