@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { createServer } from '../src/app.js'
 import { loadServerConfig } from '../src/config.js'
 import { DemoAdapter } from '../src/librus/demo-adapter.js'
+import { LoginAttemptLimiter } from '../src/security/login-attempt-limiter.js'
 import {
   SESSION_COOKIE_NAME,
   SESSION_COOKIE_PATH,
@@ -93,6 +94,105 @@ describe('session routes', () => {
       await app.close()
     },
   )
+
+  test('applies exponential backoff and limits failures to five per minute', async () => {
+    vi.useRealTimers()
+    let now = 0
+    const loginAttempts = new LoginAttemptLimiter(() => now)
+    const app = createServer(config, new SessionStore<unknown>(), loginAttempts)
+
+    for (const [index, backoffSeconds] of [1, 2, 4, 8, 16].entries()) {
+      const failure = await app.inject({
+        method: 'POST',
+        url: '/api/session',
+        headers: requestHeaders,
+        payload: { demo: false },
+      })
+      expect(failure.statusCode).toBe(400)
+
+      const cooldown = await app.inject({
+        method: 'POST',
+        url: '/api/session',
+        headers: requestHeaders,
+        payload: { demo: false },
+      })
+      expect(cooldown.statusCode).toBe(429)
+      expect(cooldown.headers['retry-after']).toBe(
+        index === 4 ? '45' : String(backoffSeconds),
+      )
+
+      now += (index === 4 ? 45 : backoffSeconds) * 1_000
+    }
+
+    const afterWindow = await app.inject({
+      method: 'POST',
+      url: '/api/session',
+      headers: requestHeaders,
+      payload: { demo: false },
+    })
+    expect(afterWindow.statusCode).toBe(400)
+
+    now += 32_000
+    const seventhFailure = await app.inject({
+      method: 'POST',
+      url: '/api/session',
+      headers: requestHeaders,
+      payload: { demo: false },
+    })
+    expect(seventhFailure.statusCode).toBe(400)
+
+    const cappedBackoff = await app.inject({
+      method: 'POST',
+      url: '/api/session',
+      headers: requestHeaders,
+      payload: { demo: false },
+    })
+    expect(cappedBackoff.statusCode).toBe(429)
+    expect(cappedBackoff.headers['retry-after']).toBe('60')
+    await app.close()
+  })
+
+  test('successful demo session resets the failed-attempt backoff', async () => {
+    vi.useRealTimers()
+    let now = 0
+    const loginAttempts = new LoginAttemptLimiter(() => now)
+    const app = createServer(config, new SessionStore<unknown>(), loginAttempts)
+
+    const failure = await app.inject({
+      method: 'POST',
+      url: '/api/session',
+      headers: requestHeaders,
+      payload: { demo: false },
+    })
+    expect(failure.statusCode).toBe(400)
+
+    now += 1_000
+    const success = await app.inject({
+      method: 'POST',
+      url: '/api/session',
+      headers: requestHeaders,
+      payload: { demo: true },
+    })
+    expect(success.statusCode).toBe(201)
+
+    const nextFailure = await app.inject({
+      method: 'POST',
+      url: '/api/session',
+      headers: requestHeaders,
+      payload: { demo: false },
+    })
+    expect(nextFailure.statusCode).toBe(400)
+    now += 999
+    const retry = await app.inject({
+      method: 'POST',
+      url: '/api/session',
+      headers: requestHeaders,
+      payload: { demo: false },
+    })
+    expect(retry.statusCode).toBe(429)
+    expect(retry.headers['retry-after']).toBe('1')
+    await app.close()
+  })
 
   test('reports unauthenticated and expires an invalid session cookie', async () => {
     const app = createServer(config)
