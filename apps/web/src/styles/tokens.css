@@ -2,9 +2,27 @@
   --color-text: #222222;
   --color-text-muted: #595959;
   --color-background: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f5f7fa;
+  --color-border: #b7c0cc;
+  --color-accent: #174ea6;
+  --color-on-accent: #ffffff;
+  --color-focus: #174ea6;
+  --color-error: #a32121;
+  --color-success: #176b3a;
   --font-family: system-ui, sans-serif;
   --font-size-heading: 2rem;
+  --font-size-body: 1rem;
+  --font-size-small: 0.875rem;
+  --radius-small: 0.375rem;
+  --radius-large: 0.75rem;
+  --shadow-card: 0 0.5rem 1.5rem rgb(20 35 55 / 8%);
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
   --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
   --space-12: 3rem;
   --content-width: 40rem;
 }
