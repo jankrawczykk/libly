@@ -68,11 +68,15 @@ function renderDashboard() {
 test('shows annual overall attendance and semesters from validated data', () => {
   const markup = renderDashboard()
 
-  expect(markup).toContain('Frekwencja ogółem — cały rok')
+  expect(markup).toContain('Frekwencja ogółem — Cały rok')
   expect(markup).toContain('50%')
   expect(markup).toContain('Obecność na 2 z 4 liczonych lekcji')
   expect(markup).toContain('Semestr 1')
   expect(markup).toContain('Semestr 2')
+  expect(markup).toContain('role="group" aria-label="Wybierz okres frekwencji"')
+  expect(markup).toMatch(/aria-pressed="true"[^>]*>Cały rok<\/button>/u)
+  expect(markup).toMatch(/aria-pressed="false"[^>]*>Semestr 1<\/button>/u)
+  expect(markup).toMatch(/aria-pressed="false"[^>]*>Semestr 2<\/button>/u)
 })
 
 test('orders subjects from lowest attendance to highest', () => {

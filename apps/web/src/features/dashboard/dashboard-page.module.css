@@ -182,18 +182,38 @@
   background: var(--color-surface-muted);
 }
 
-.semesterGrid {
+.periodSwitcher {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-4);
-  margin-top: var(--space-4);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: var(--space-6) 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-large);
+  background: var(--color-surface-muted);
 }
 
-.semesterGrid p {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-2);
-  margin: 0;
+.periodButton {
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid transparent;
+  border-radius: var(--radius-small);
+  color: var(--color-text);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.periodButton[aria-pressed='true'] {
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+}
+
+.periodButton:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
 }
 
 .subjectSection {
@@ -260,7 +280,7 @@
     flex-direction: column;
   }
 
-  .semesterGrid {
+  .periodSwitcher {
     grid-template-columns: 1fr;
   }
 }
