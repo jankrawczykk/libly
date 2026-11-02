@@ -2,7 +2,9 @@ import { describe, expect, test } from 'vitest'
 import {
   AttendanceEntry,
   classifyAttendanceStatus,
+  calculateAbsenceBuffer,
   calculateAttendanceSummary,
+  calculateRecoveryRequirement,
   getSchoolProfilePreset,
 } from '../src/index.js'
 
@@ -56,6 +58,109 @@ describe('classifyAttendanceStatus', () => {
         attendanceWarningThreshold: 55,
       }),
     ).toBe('ok')
+  })
+})
+
+describe('calculateAbsenceBuffer', () => {
+  test('returns unavailable when there are no counted lessons', () => {
+    expect(
+      calculateAbsenceBuffer({ presentLessons: 0, countedLessons: 0 }, 50),
+    ).toEqual({ kind: 'unavailable' })
+  })
+
+  test('returns unlimited when the threshold is zero', () => {
+    expect(
+      calculateAbsenceBuffer({ presentLessons: 0, countedLessons: 10 }, 0),
+    ).toEqual({ kind: 'unlimited' })
+  })
+
+  test('calculates the maximum absences that keep attendance at threshold', () => {
+    expect(
+      calculateAbsenceBuffer({ presentLessons: 8, countedLessons: 10 }, 50),
+    ).toEqual({ kind: 'finite', lessons: 6 })
+  })
+
+  test('floors the buffer while preserving the threshold', () => {
+    expect(
+      calculateAbsenceBuffer({ presentLessons: 7, countedLessons: 10 }, 60),
+    ).toEqual({ kind: 'finite', lessons: 1 })
+  })
+
+  test('returns zero when attendance is already below the threshold', () => {
+    expect(
+      calculateAbsenceBuffer({ presentLessons: 4, countedLessons: 10 }, 50),
+    ).toEqual({ kind: 'finite', lessons: 0 })
+  })
+
+  test('does not allow another absence at a 100 percent threshold', () => {
+    expect(
+      calculateAbsenceBuffer({ presentLessons: 10, countedLessons: 10 }, 100),
+    ).toEqual({ kind: 'finite', lessons: 0 })
+  })
+})
+
+describe('calculateRecoveryRequirement', () => {
+  test('returns unavailable when there are no counted lessons', () => {
+    expect(
+      calculateRecoveryRequirement(
+        { presentLessons: 0, countedLessons: 0 },
+        50,
+      ),
+    ).toEqual({ kind: 'unavailable' })
+  })
+
+  test('returns zero when attendance is already at or above threshold', () => {
+    expect(
+      calculateRecoveryRequirement(
+        { presentLessons: 6, countedLessons: 10 },
+        50,
+      ),
+    ).toEqual({ kind: 'finite', lessons: 0 })
+    expect(
+      calculateRecoveryRequirement(
+        { presentLessons: 8, countedLessons: 10 },
+        50,
+      ),
+    ).toEqual({ kind: 'finite', lessons: 0 })
+  })
+
+  test('calculates lessons needed to recover to the threshold', () => {
+    expect(
+      calculateRecoveryRequirement(
+        { presentLessons: 3, countedLessons: 10 },
+        50,
+      ),
+    ).toEqual({ kind: 'finite', lessons: 4 })
+  })
+
+  test('returns impossible for a 100 percent threshold with any absence', () => {
+    expect(
+      calculateRecoveryRequirement(
+        { presentLessons: 9, countedLessons: 10 },
+        100,
+      ),
+    ).toEqual({ kind: 'impossible' })
+  })
+
+  test('returns zero for a zero threshold', () => {
+    expect(
+      calculateRecoveryRequirement(
+        { presentLessons: 0, countedLessons: 10 },
+        0,
+      ),
+    ).toEqual({ kind: 'finite', lessons: 0 })
+  })
+
+  test('rejects invalid counts and thresholds', () => {
+    expect(() =>
+      calculateRecoveryRequirement(
+        { presentLessons: 11, countedLessons: 10 },
+        50,
+      ),
+    ).toThrow(RangeError)
+    expect(() =>
+      calculateAbsenceBuffer({ presentLessons: 0, countedLessons: 0 }, 101),
+    ).toThrow(RangeError)
   })
 })
 

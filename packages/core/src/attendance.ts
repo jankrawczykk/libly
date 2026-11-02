@@ -59,6 +59,110 @@ export interface AttendanceSummary {
   subjects: AttendanceSubjectSummary[]
 }
 
+export type AbsenceBuffer =
+  | { kind: 'unavailable' }
+  | { kind: 'unlimited' }
+  | { kind: 'finite'; lessons: number }
+
+export type RecoveryRequirement =
+  | { kind: 'unavailable' }
+  | { kind: 'impossible' }
+  | { kind: 'finite'; lessons: number }
+
+type AttendanceCounts = Pick<
+  AttendancePercentage,
+  'presentLessons' | 'countedLessons'
+>
+
+function getThresholdFraction(thresholdPercent: number): number {
+  if (
+    !Number.isFinite(thresholdPercent) ||
+    thresholdPercent < 0 ||
+    thresholdPercent > 100
+  ) {
+    throw new RangeError('Attendance threshold must be between 0 and 100')
+  }
+
+  return thresholdPercent / 100
+}
+
+function validateAttendanceCounts({
+  presentLessons,
+  countedLessons,
+}: AttendanceCounts): void {
+  if (
+    !Number.isInteger(presentLessons) ||
+    !Number.isInteger(countedLessons) ||
+    presentLessons < 0 ||
+    countedLessons < 0 ||
+    presentLessons > countedLessons
+  ) {
+    throw new RangeError(
+      'Attendance lesson counts must be non-negative integers with present lessons no greater than counted lessons',
+    )
+  }
+}
+
+export function calculateAbsenceBuffer(
+  attendance: AttendanceCounts,
+  thresholdPercent: number,
+): AbsenceBuffer {
+  validateAttendanceCounts(attendance)
+  const threshold = getThresholdFraction(thresholdPercent)
+
+  if (threshold === 0) {
+    return { kind: 'unlimited' }
+  }
+  if (attendance.countedLessons === 0) {
+    return { kind: 'unavailable' }
+  }
+
+  const currentPercentage =
+    attendance.presentLessons / attendance.countedLessons
+  if (currentPercentage < threshold) {
+    return { kind: 'finite', lessons: 0 }
+  }
+
+  return {
+    kind: 'finite',
+    lessons: Math.max(
+      0,
+      Math.floor(
+        attendance.presentLessons / threshold - attendance.countedLessons,
+      ),
+    ),
+  }
+}
+
+export function calculateRecoveryRequirement(
+  attendance: AttendanceCounts,
+  thresholdPercent: number,
+): RecoveryRequirement {
+  validateAttendanceCounts(attendance)
+  const threshold = getThresholdFraction(thresholdPercent)
+
+  if (attendance.countedLessons === 0) {
+    return { kind: 'unavailable' }
+  }
+
+  const currentPercentage =
+    attendance.presentLessons / attendance.countedLessons
+  if (currentPercentage >= threshold) {
+    return { kind: 'finite', lessons: 0 }
+  }
+  if (threshold === 1) {
+    return { kind: 'impossible' }
+  }
+
+  return {
+    kind: 'finite',
+    lessons: Math.ceil(
+      (threshold * attendance.countedLessons - attendance.presentLessons) /
+        (1 - threshold),
+    ),
+  }
+}
+
 export function calculateAttendanceSummary(
   entries: readonly AttendanceEntry[],
   profile: Pick<SchoolProfile, 'attendance' | 'subjectRules'>,
