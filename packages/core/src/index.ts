@@ -6,6 +6,7 @@ import vocationalStage1Preset from '../presets/vocational_stage1.json' with { ty
 import vocationalStage2Preset from '../presets/vocational_stage2.json' with { type: 'json' }
 import postSecondaryPreset from '../presets/post_secondary.json' with { type: 'json' }
 import otherPreset from '../presets/other.json' with { type: 'json' }
+export * from './attendance.js'
 
 export const CURRENT_SCHOOL_PROFILE_VERSION = 1
 
