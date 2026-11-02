@@ -39,6 +39,7 @@ Bezpieczeństwo jest najważniejszym założeniem projektu.
 * **Wszystko dzieje się na Twoim komputerze.** Domyślnie serwer aplikacji nasłuchuje tylko na `127.0.0.1`, a nieprawidłowe nagłówki `Host` są odrzucane.
 * **Hasło nie jest zapisywane.** Trafia do lokalnego serwera tylko po to, żeby zalogować się do Librusa, a zaraz potem jest porzucane. Nie ma bazy danych, plików z danymi ani zapisu w `localStorage`.
 * **Dane trzymamy tylko w pamięci** i znikają po wylogowaniu, po wygaśnięciu sesji albo po zamknięciu aplikacji.
+* **Sesja ma ograniczony czas życia.** Wygasa po 15 minutach bez aktywności albo po 60 minutach łącznie; wylogowanie usuwa ją od razu.
 * **Jedyny ruch wychodzący idzie do Librusa.** Brak analityki, telemetrii, zewnętrznych czcionek i skryptów z internetu.
 * **Zabezpieczenia przeglądarkowe.** Restrykcyjne nagłówki (CSP), sprawdzanie nagłówków `Host` i `Origin` przy żądaniach zmieniających stan oraz `Cache-Control: no-store` dla API.
 * **Aplikacja tylko czyta.** Nie wysyła ani nie usuwa wiadomości i niczego nie zmienia na Twoim koncie.
