@@ -1,4 +1,42 @@
-import type { AttendanceEntry, SchoolProfile } from './index.js'
+import type {
+  AttendanceEntry,
+  AttendanceRules,
+  SchoolProfile,
+  SubjectRule,
+} from './index.js'
+
+export type AttendanceStatus = 'critical' | 'warning' | 'ok' | 'unknown'
+
+export type AttendanceThresholds = Pick<
+  AttendanceRules,
+  'criticalThreshold' | 'warningThreshold'
+>
+
+export function classifyAttendanceStatus(
+  percentage: number | null,
+  thresholds: AttendanceThresholds,
+  subjectRule?: Pick<
+    SubjectRule,
+    'attendanceCriticalThreshold' | 'attendanceWarningThreshold'
+  >,
+): AttendanceStatus {
+  if (percentage === null) {
+    return 'unknown'
+  }
+
+  const criticalThreshold =
+    subjectRule?.attendanceCriticalThreshold ?? thresholds.criticalThreshold
+  const warningThreshold =
+    subjectRule?.attendanceWarningThreshold ?? thresholds.warningThreshold
+
+  if (percentage < criticalThreshold) {
+    return 'critical'
+  }
+  if (percentage < warningThreshold) {
+    return 'warning'
+  }
+  return 'ok'
+}
 
 export interface AttendancePercentage {
   presentLessons: number
