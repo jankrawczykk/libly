@@ -6,6 +6,9 @@ import { registerSecurityMiddleware } from './security/security-middleware.js'
 import { registerSessionRoutes } from './session/session-routes.js'
 import { SessionStore } from './session/session-store.js'
 import { z } from 'zod'
+import type { LibrusPort } from './librus/librus-port.js'
+import { registerDataRoutes } from './librus/data-routes.js'
+import { SessionDataCache } from './librus/session-data-cache.js'
 
 interface ServerLogStream {
   write(message: string): void
@@ -28,9 +31,10 @@ export const SERVER_LOG_REDACTION_PATHS = [
 
 export function createServer(
   config: ServerConfig = loadServerConfig(),
-  sessions: SessionStore<unknown> = new SessionStore<unknown>(),
+  sessions: SessionStore<LibrusPort> = new SessionStore<LibrusPort>(),
   loginAttempts: LoginAttemptLimiter = new LoginAttemptLimiter(),
   logStream?: ServerLogStream,
+  sessionDataCache: SessionDataCache = new SessionDataCache(),
 ): FastifyInstance {
   const app = fastify({
     logger: {
@@ -65,5 +69,6 @@ export function createServer(
   app.register(cookie)
   registerSecurityMiddleware(app, config)
   registerSessionRoutes(app, sessions, loginAttempts)
+  registerDataRoutes(app, sessions, sessionDataCache)
   return app
 }

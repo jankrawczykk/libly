@@ -8,6 +8,7 @@ import { DemoAdapter } from '../librus/demo-adapter.js'
 import { LoginAttemptLimiter } from '../security/login-attempt-limiter.js'
 import type { SessionStore } from './session-store.js'
 import { z } from 'zod'
+import type { LibrusPort } from '../librus/librus-port.js'
 
 const DemoSessionRequestSchema = z
   .object({
@@ -17,7 +18,7 @@ const DemoSessionRequestSchema = z
 
 export function registerSessionRoutes(
   app: FastifyInstance,
-  sessions: SessionStore<unknown>,
+  sessions: SessionStore<LibrusPort>,
   loginAttempts: LoginAttemptLimiter = new LoginAttemptLimiter(),
 ): void {
   app.post('/api/session', async (request, reply) => {

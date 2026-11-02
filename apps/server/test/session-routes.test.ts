@@ -3,6 +3,7 @@ import { createServer } from '../src/app.js'
 import { loadServerConfig } from '../src/config.js'
 import { DemoAdapter } from '../src/librus/demo-adapter.js'
 import { LoginAttemptLimiter } from '../src/security/login-attempt-limiter.js'
+import type { LibrusPort } from '../src/librus/librus-port.js'
 import {
   SESSION_COOKIE_NAME,
   SESSION_COOKIE_PATH,
@@ -27,7 +28,7 @@ afterEach(() => {
 describe('session routes', () => {
   test('creates a synthetic demo session for the strict demo request', async () => {
     vi.useRealTimers()
-    const sessions = new SessionStore<unknown>()
+    const sessions = new SessionStore<LibrusPort>()
     const app = createServer(config, sessions)
 
     const response = await app.inject({
@@ -75,7 +76,7 @@ describe('session routes', () => {
     'rejects unsupported demo session request bodies: %s',
     async (payload) => {
       vi.useRealTimers()
-      const sessions = new SessionStore<unknown>()
+      const sessions = new SessionStore<LibrusPort>()
       const app = createServer(config, sessions)
 
       const response = await app.inject({
@@ -99,7 +100,11 @@ describe('session routes', () => {
     vi.useRealTimers()
     let now = 0
     const loginAttempts = new LoginAttemptLimiter(() => now)
-    const app = createServer(config, new SessionStore<unknown>(), loginAttempts)
+    const app = createServer(
+      config,
+      new SessionStore<LibrusPort>(),
+      loginAttempts,
+    )
 
     for (const [index, backoffSeconds] of [1, 2, 4, 8, 16].entries()) {
       const failure = await app.inject({
@@ -156,7 +161,11 @@ describe('session routes', () => {
     vi.useRealTimers()
     let now = 0
     const loginAttempts = new LoginAttemptLimiter(() => now)
-    const app = createServer(config, new SessionStore<unknown>(), loginAttempts)
+    const app = createServer(
+      config,
+      new SessionStore<LibrusPort>(),
+      loginAttempts,
+    )
 
     const failure = await app.inject({
       method: 'POST',
@@ -217,8 +226,8 @@ describe('session routes', () => {
   })
 
   test('sets strict httpOnly cookie attributes for an active session', async () => {
-    const sessions = new SessionStore<unknown>()
-    const { id } = sessions.create({ synthetic: true })
+    const sessions = new SessionStore<LibrusPort>()
+    const { id } = sessions.create(new DemoAdapter())
     const app = createServer(config, sessions)
 
     const response = await app.inject({
@@ -243,8 +252,8 @@ describe('session routes', () => {
   })
 
   test('refreshes the cookie lifetime without extending the absolute session lifetime', async () => {
-    const sessions = new SessionStore<unknown>()
-    const { id } = sessions.create({ synthetic: true })
+    const sessions = new SessionStore<LibrusPort>()
+    const { id } = sessions.create(new DemoAdapter())
     vi.advanceTimersByTime(14 * 60 * 1000)
     const app = createServer(config, sessions)
 
@@ -263,10 +272,10 @@ describe('session routes', () => {
   })
 
   test('clears the cookie when an idle session expires', async () => {
-    const sessions = new SessionStore<unknown>({
+    const sessions = new SessionStore<LibrusPort>({
       idleTimeoutMs: 1_000,
     })
-    const { id } = sessions.create({ synthetic: true })
+    const { id } = sessions.create(new DemoAdapter())
     vi.advanceTimersByTime(1_000)
     const app = createServer(config, sessions)
 
@@ -286,8 +295,8 @@ describe('session routes', () => {
   })
 
   test('destroys the session and expires the cookie on logout', async () => {
-    const sessions = new SessionStore<unknown>()
-    const { id } = sessions.create({ synthetic: true })
+    const sessions = new SessionStore<LibrusPort>()
+    const { id } = sessions.create(new DemoAdapter())
     const app = createServer(config, sessions)
 
     const response = await app.inject({

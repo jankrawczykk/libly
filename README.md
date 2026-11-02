@@ -129,7 +129,7 @@ npm test
 npm run test:e2e     # testy Playwright w trybie demo
 ```
 
-Podczas pracy używaj trybu demo. Nie potrzebujesz prawdziwego konta Librus, żeby rozwijać większość projektu. Serwer udostępnia demonstracyjny `POST /api/session`, który przyjmuje wyłącznie JSON `{"demo":true}` i tworzy sesję z danymi syntetycznymi; logowanie do Librusa nie jest jeszcze dostępne.
+Podczas pracy używaj trybu demo. Nie potrzebujesz prawdziwego konta Librus, żeby rozwijać większość projektu. Serwer udostępnia demonstracyjny `POST /api/session`, który przyjmuje wyłącznie JSON `{"demo":true}` i tworzy sesję z danymi syntetycznymi; logowanie do Librusa nie jest jeszcze dostępne. Po zalogowaniu demo `GET /api/attendance` i `GET /api/grades` zwracają surowe, znormalizowane rekordy. `POST /api/refresh` odświeża pamięć podręczną, która żyje trzy minuty; ręczne odświeżenie ma limit jednej próby na minutę. Endpointy podsumowań statystyk powstaną po ustaleniu przepływu ustawień szkoły.
 
 ## Jak kontrybuować
 
