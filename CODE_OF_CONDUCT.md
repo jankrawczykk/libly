@@ -23,7 +23,7 @@ Kodeks obowiązuje w repozytorium, w kanałach projektu oraz wtedy, gdy ktoś pu
 
 ## Egzekwowanie
 
-Zgłoszenia kieruj do: **[wstaw metodę kontaktu]**. Opiekunowie repozytorium rozpatrzą je poufnie, sprawiedliwie i proporcjonalnie do sytuacji. Mogą poprosić o zmianę zachowania, ostrzec uczestnika, czasowo ograniczyć jego udział lub zakończyć możliwość uczestnictwa. Osoby odpowiedzialne za egzekwowanie kodeksu powinny ujawnić konflikt interesów i wyłączyć się z rozpatrywania takiej sprawy.
+Zgłoszenia kieruj do: **jankrawczykk**. Opiekunowie repozytorium rozpatrzą je poufnie, sprawiedliwie i proporcjonalnie do sytuacji. Mogą poprosić o zmianę zachowania, ostrzec uczestnika, czasowo ograniczyć jego udział lub zakończyć możliwość uczestnictwa. Osoby odpowiedzialne za egzekwowanie kodeksu powinny ujawnić konflikt interesów i wyłączyć się z rozpatrywania takiej sprawy.
 
 ## Podziękowania
 
