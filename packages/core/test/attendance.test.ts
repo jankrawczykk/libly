@@ -1,11 +1,63 @@
 import { describe, expect, test } from 'vitest'
 import {
   AttendanceEntry,
+  classifyAttendanceStatus,
   calculateAttendanceSummary,
   getSchoolProfilePreset,
 } from '../src/index.js'
 
 const profile = getSchoolProfilePreset('other').profile
+
+describe('classifyAttendanceStatus', () => {
+  const thresholds = {
+    criticalThreshold: 50,
+    warningThreshold: 60,
+  }
+
+  test('returns unknown when no percentage can be calculated', () => {
+    expect(classifyAttendanceStatus(null, thresholds)).toBe('unknown')
+  })
+
+  test('classifies percentages below both thresholds as critical', () => {
+    expect(classifyAttendanceStatus(0, thresholds)).toBe('critical')
+    expect(classifyAttendanceStatus(49.99, thresholds)).toBe('critical')
+  })
+
+  test('treats the exact critical threshold as warning', () => {
+    expect(classifyAttendanceStatus(50, thresholds)).toBe('warning')
+  })
+
+  test('classifies percentages between thresholds as warning', () => {
+    expect(classifyAttendanceStatus(55, thresholds)).toBe('warning')
+    expect(classifyAttendanceStatus(59.99, thresholds)).toBe('warning')
+  })
+
+  test('treats the exact warning threshold as okay', () => {
+    expect(classifyAttendanceStatus(60, thresholds)).toBe('ok')
+    expect(classifyAttendanceStatus(100, thresholds)).toBe('ok')
+  })
+
+  test('uses per-subject threshold overrides independently', () => {
+    const subjectRule = {
+      attendanceCriticalThreshold: 40,
+      attendanceWarningThreshold: 70,
+    }
+
+    expect(classifyAttendanceStatus(45, thresholds, subjectRule)).toBe(
+      'warning',
+    )
+    expect(
+      classifyAttendanceStatus(55, thresholds, {
+        attendanceCriticalThreshold: 60,
+      }),
+    ).toBe('critical')
+    expect(
+      classifyAttendanceStatus(55, thresholds, {
+        attendanceWarningThreshold: 55,
+      }),
+    ).toBe('ok')
+  })
+})
 
 function entry(overrides: Partial<AttendanceEntry> = {}): AttendanceEntry {
   return {
