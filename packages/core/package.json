@@ -1,0 +1,9 @@
+{
+  "name": "@libly/core",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit --project tsconfig.json",
+    "test": "vitest run"
+  }
+}
