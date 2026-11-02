@@ -44,6 +44,14 @@ function renderDashboard() {
         rawSymbol: 'synthetic_absence',
         semester: 1,
       },
+      {
+        date: '2026-09-05',
+        lessonNumber: 5,
+        subject: 'Plastyka',
+        kind: 'exempt',
+        rawSymbol: 'synthetic_exempt',
+        semester: 1,
+      },
     ],
   )
   const markup = renderToStaticMarkup(
@@ -82,4 +90,18 @@ test('shows the school preset as typical and asks users to verify it', () => {
 
   expect(markup).toContain('Typowe wartości, sprawdź statut swojej szkoły')
   expect(markup).toContain('Sprawdź wartości w statucie swojej szkoły')
+})
+
+test('shows accessible text and icons for critical, warning, okay, and unknown statuses', () => {
+  const markup = renderDashboard()
+
+  expect(markup).toContain('Poniżej progu krytycznego')
+  expect(markup).toContain('Poniżej progu ostrzegawczego')
+  expect(markup).toContain('Osiągnięto próg ostrzegawczy')
+  expect(markup).toContain('Brak danych do oceny')
+  expect(markup).toContain(
+    'aria-label="Status frekwencji: Poniżej progu krytycznego"',
+  )
+  expect(markup).toContain('aria-hidden="true">!</span>')
+  expect(markup).toContain('aria-hidden="true">✓</span>')
 })

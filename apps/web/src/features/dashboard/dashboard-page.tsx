@@ -1,8 +1,10 @@
 import {
   calculateAttendanceSummary,
+  classifyAttendanceStatus,
   getSchoolProfilePreset,
   SchoolTypeSchema,
   SCHOOL_TYPES,
+  type AttendanceStatus,
   type SchoolType,
 } from '@libly/core'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -33,6 +35,23 @@ const SCHOOL_TYPE_TRANSLATION_KEYS: Record<SchoolType, TranslationKey> = {
   other: 'school.other',
 }
 
+const ATTENDANCE_STATUS_TRANSLATION_KEYS: Record<
+  AttendanceStatus,
+  TranslationKey
+> = {
+  critical: 'dashboard.statusCritical',
+  warning: 'dashboard.statusWarning',
+  ok: 'dashboard.statusOk',
+  unknown: 'dashboard.statusUnknown',
+}
+
+const ATTENDANCE_STATUS_ICONS: Record<AttendanceStatus, string> = {
+  critical: '!',
+  warning: '!',
+  ok: '✓',
+  unknown: '—',
+}
+
 function formatPercentage(percentage: number | null): string {
   if (percentage === null) {
     return t('dashboard.noAttendanceData')
@@ -41,6 +60,33 @@ function formatPercentage(percentage: number | null): string {
   return `${new Intl.NumberFormat('pl-PL', {
     maximumFractionDigits: 1,
   }).format(percentage)}%`
+}
+
+function AttendanceStatusBadge({
+  percentage,
+  thresholds,
+}: {
+  percentage: number | null
+  thresholds: {
+    criticalThreshold: number
+    warningThreshold: number
+  }
+}) {
+  const status = classifyAttendanceStatus(percentage, thresholds)
+  const label = t(ATTENDANCE_STATUS_TRANSLATION_KEYS[status])
+
+  return (
+    <span
+      className={styles['statusBadge']}
+      data-status={status}
+      aria-label={t('dashboard.statusAccessible', { status: label })}
+    >
+      <span className={styles['statusIcon']} aria-hidden="true">
+        {ATTENDANCE_STATUS_ICONS[status]}
+      </span>
+      {label}
+    </span>
+  )
 }
 
 function ProfileSetup({
@@ -219,6 +265,10 @@ function DashboardContent({
         <p className={styles['overallValue']}>
           {formatPercentage(overall.percentage)}
         </p>
+        <AttendanceStatusBadge
+          percentage={overall.percentage}
+          thresholds={profilePreset.profile.attendance}
+        />
         <p>
           {t('dashboard.lessonCount', {
             present: overall.presentLessons,
@@ -261,7 +311,13 @@ function DashboardContent({
                     })}
                   </p>
                 </div>
-                <strong>{formatPercentage(subject.year.percentage)}</strong>
+                <div className={styles['subjectResult']}>
+                  <strong>{formatPercentage(subject.year.percentage)}</strong>
+                  <AttendanceStatusBadge
+                    percentage={subject.year.percentage}
+                    thresholds={profilePreset.profile.attendance}
+                  />
+                </div>
               </li>
             ))}
           </ol>

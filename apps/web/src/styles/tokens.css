@@ -10,6 +10,12 @@
   --color-focus: #174ea6;
   --color-error: #a32121;
   --color-success: #176b3a;
+  --color-attendance-critical: #8c1d18;
+  --color-attendance-critical-surface: #fce8e6;
+  --color-attendance-warning: #795000;
+  --color-attendance-warning-surface: #fff4cc;
+  --color-attendance-ok: #176b3a;
+  --color-attendance-ok-surface: #e6f4ea;
   --font-family: system-ui, sans-serif;
   --font-size-heading: 2rem;
   --font-size-body: 1rem;
