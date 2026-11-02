@@ -138,6 +138,50 @@
   font-weight: 700;
 }
 
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: fit-content;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  font-size: var(--font-size-small);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.statusIcon {
+  display: inline-grid;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.statusBadge[data-status='critical'] {
+  color: var(--color-attendance-critical);
+  background: var(--color-attendance-critical-surface);
+}
+
+.statusBadge[data-status='warning'] {
+  color: var(--color-attendance-warning);
+  background: var(--color-attendance-warning-surface);
+}
+
+.statusBadge[data-status='ok'] {
+  color: var(--color-attendance-ok);
+  background: var(--color-attendance-ok-surface);
+}
+
+.statusBadge[data-status='unknown'] {
+  color: var(--color-text-muted);
+  background: var(--color-surface-muted);
+}
+
 .semesterGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -185,7 +229,13 @@
   font-size: var(--font-size-small);
 }
 
-.subjectItem strong {
+.subjectResult {
+  display: grid;
+  justify-items: end;
+  gap: var(--space-2);
+}
+
+.subjectResult strong {
   font-size: 1.25rem;
   white-space: nowrap;
 }

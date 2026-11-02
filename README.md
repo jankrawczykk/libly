@@ -22,7 +22,7 @@ Plan funkcji jest rozłożony na etapy. Aktualny stan znajdziesz w sekcji Roadma
 
 * Ogólna frekwencja w procentach
 * Frekwencja w procentach dla każdego przedmiotu, od najgorszej
-* Podświetlenie na czerwono przedmiotów z frekwencją poniżej progu (razem z ikoną i opisem, nie tylko kolorem)
+* Podświetlenie na czerwono lub bursztynowo przedmiotów poniżej progów (razem z ikoną i opisem, nie tylko kolorem)
 * Pełne dopasowanie do Twojej szkoły (typ szkoły, próg frekwencji ze statutu, zasady liczenia, praktyki zawodowe), opisane niżej w sekcji Ustawienia szkoły
 * Ile lekcji możesz jeszcze opuścić i ile musisz być obecny, żeby wrócić nad próg
 * Symulator frekwencji i ocen
