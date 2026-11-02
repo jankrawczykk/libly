@@ -1,0 +1,30 @@
+name: Zgłoszenie błędu
+description: Opisz błąd bez udostępniania prawdziwych danych.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        **Nigdy nie dołączaj loginu, hasła ani prawdziwych danych szkolnych lub
+        uczniowskich.**
+  - type: textarea
+    id: expected
+    attributes:
+      label: Oczekiwane zachowanie
+      description: Co powinno się wydarzyć?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Rzeczywiste zachowanie
+      description: Co się wydarzyło? Wklej wyłącznie niesensytywny komunikat błędu.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Kroki odtworzenia
+      description: Opisz kroki z użyciem trybu demo lub danych syntetycznych.
+    validations:
+      required: true

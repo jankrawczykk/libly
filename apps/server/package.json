@@ -1,0 +1,11 @@
+{
+  "name": "@libly/server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node -e \"console.log('Server placeholder: server implementation is scheduled for Milestone 2.')\"",
+    "build": "tsc --noEmit --project tsconfig.json",
+    "start": "node -e \"console.log('Server placeholder: server implementation is scheduled for Milestone 2.')\"",
+    "test": "vitest run"
+  }
+}
