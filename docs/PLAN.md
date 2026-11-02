@@ -275,6 +275,9 @@ average = sum(value * weight) / sum(weight)     over grades where countsToAverag
 * Grades like `4+` and `3-` map to configurable offsets, default `+0.5` and `-0.25`, because schools differ.
 * Symbols such as `np`, `bz`, and `nb` never count.
 * Compute per subject, per semester, and for the whole year. Return `null` if there are no countable grades.
+* The overall average follows `averageMethod`, `includeBehaviorInAverage`, subject inclusion rules, and the work placement/practical classes handling in the school profile. Separate handling produces separate averages; subject averages remain available even when a subject is excluded from the overall average.
+* Plus and minus offsets are applied to numeric base values recognized in the raw grade text. Other numeric values use the validated normalized `value`.
+* When the selected scale has no defined minimum and maximum (points or custom), the target calculator reports reachability as unknown rather than assuming bounds.
 
 ### Grade needed for a target
 
