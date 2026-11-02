@@ -12,12 +12,12 @@
     "packages/core"
   ],
   "scripts": {
-    "dev": "npm run dev --workspaces --if-present --parallel",
-    "build": "npm run build --workspaces --if-present",
+    "dev": "npm run build --workspace=@libly/core && npm run dev --workspaces --if-present --parallel",
+    "build": "npm run build --workspace=@libly/core && npm run build --workspace=@libly/server && npm run build --workspace=@libly/web",
     "start": "npm run start --workspace=@libly/server",
-    "lint": "eslint apps packages",
-    "typecheck": "tsc --noEmit --project apps/server/tsconfig.json && tsc --noEmit --project apps/web/tsconfig.json && tsc --noEmit --project packages/core/tsconfig.json",
-    "test": "vitest run",
+    "lint": "npm run build --workspace=@libly/core && eslint apps packages",
+    "typecheck": "npm run build --workspace=@libly/core && tsc --noEmit --project apps/server/tsconfig.json && tsc --noEmit --project apps/web/tsconfig.json && tsc --noEmit --project packages/core/tsconfig.json",
+    "test": "npm run build --workspace=@libly/core && vitest run",
     "test:e2e": "node -e \"console.log('E2E tests are a placeholder; Playwright demo-mode coverage is scheduled for a later milestone.')\"",
     "check": "npm run lint && npm run typecheck && npm test && npm audit --audit-level=high && npm run check:env",
     "check:env": "node scripts/check-env.mjs"

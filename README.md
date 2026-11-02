@@ -127,7 +127,7 @@ npm test
 npm run test:e2e     # testy Playwright w trybie demo
 ```
 
-Podczas pracy używaj trybu demo. Nie potrzebujesz prawdziwego konta Librus, żeby rozwijać większość projektu.
+Podczas pracy używaj trybu demo. Nie potrzebujesz prawdziwego konta Librus, żeby rozwijać większość projektu. Serwer udostępnia demonstracyjny `POST /api/session`, który przyjmuje wyłącznie JSON `{"demo":true}` i tworzy sesję z danymi syntetycznymi; logowanie do Librusa nie jest jeszcze dostępne.
 
 ## Jak kontrybuować
 
