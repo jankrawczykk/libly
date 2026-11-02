@@ -19,7 +19,8 @@
     "typecheck": "tsc --noEmit --project apps/server/tsconfig.json && tsc --noEmit --project apps/web/tsconfig.json && tsc --noEmit --project packages/core/tsconfig.json",
     "test": "vitest run",
     "test:e2e": "node -e \"console.log('E2E tests are a placeholder; Playwright demo-mode coverage is scheduled for a later milestone.')\"",
-    "check": "npm run lint && npm run typecheck && npm test && npm audit --audit-level=high"
+    "check": "npm run lint && npm run typecheck && npm test && npm audit --audit-level=high && npm run check:env",
+    "check:env": "node scripts/check-env.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
