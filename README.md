@@ -43,6 +43,7 @@ Bezpieczeństwo jest najważniejszym założeniem projektu.
 * **Nieprawidłowe próby utworzenia sesji są ograniczane.** Po pięciu błędach w ruchomym oknie minuty kolejne żądania otrzymują `429` z czasem oczekiwania; po każdym błędzie rośnie wykładniczo cooldown.
 * **Jedyny ruch wychodzący idzie do Librusa.** Brak analityki, telemetrii, zewnętrznych czcionek i skryptów z internetu.
 * **Zabezpieczenia przeglądarkowe.** Restrykcyjne nagłówki (CSP), sprawdzanie nagłówków `Host` i `Origin` przy żądaniach zmieniających stan oraz `Cache-Control: no-store` dla API.
+* **Dzienniki nie ujawniają sekretów.** Pola hasła, ciasteczek i autoryzacji są redagowane, logi żądań nie zapisują URL ani nagłówków, a błędy są raportowane bez treści wyjątku.
 * **Aplikacja tylko czyta.** Nie wysyła ani nie usuwa wiadomości i niczego nie zmienia na Twoim koncie.
 * **Uczciwe zastrzeżenie.** JavaScript nie pozwala w pełni wyczyścić pamięci, więc nie obiecujemy zerowania haseł w RAM. Obiecujemy, że hasło nigdy nie trafia na dysk ani do sieci poza Librusem.
 

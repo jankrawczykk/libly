@@ -5,13 +5,63 @@ import { LoginAttemptLimiter } from './security/login-attempt-limiter.js'
 import { registerSecurityMiddleware } from './security/security-middleware.js'
 import { registerSessionRoutes } from './session/session-routes.js'
 import { SessionStore } from './session/session-store.js'
+import { z } from 'zod'
+
+interface ServerLogStream {
+  write(message: string): void
+}
+
+export const SERVER_LOG_REDACTION_PATHS = [
+  'password',
+  '*.password',
+  'req.body.password',
+  'cookie',
+  '*.cookie',
+  "req.headers['cookie']",
+  "res.headers['set-cookie']",
+  'authorization',
+  '*.authorization',
+  "req.headers['authorization']",
+  'err.message',
+  'err.stack',
+] as const
 
 export function createServer(
   config: ServerConfig = loadServerConfig(),
   sessions: SessionStore<unknown> = new SessionStore<unknown>(),
   loginAttempts: LoginAttemptLimiter = new LoginAttemptLimiter(),
+  logStream?: ServerLogStream,
 ): FastifyInstance {
-  const app = fastify({ logger: false })
+  const app = fastify({
+    logger: {
+      level: 'info',
+      redact: {
+        paths: [...SERVER_LOG_REDACTION_PATHS],
+        censor: '[REDACTED]',
+      },
+      serializers: {
+        req: (request) => ({
+          method: request.method,
+          remoteAddress: request.ip,
+        }),
+      },
+      ...(logStream === undefined ? {} : { stream: logStream }),
+    },
+  })
+  app.setErrorHandler((error: unknown, request, reply) => {
+    const statusResult = z
+      .object({
+        statusCode: z.number().int().min(400).max(599),
+      })
+      .safeParse(error)
+    const statusCode = statusResult.success ? statusResult.data.statusCode : 500
+
+    request.log.error({ statusCode }, 'Request failed')
+    return reply.code(statusCode).send({
+      code: statusCode >= 500 ? 'INTERNAL_ERROR' : 'INVALID_REQUEST',
+      message: statusCode >= 500 ? 'Request failed.' : 'Invalid request.',
+    })
+  })
   app.register(cookie)
   registerSecurityMiddleware(app, config)
   registerSessionRoutes(app, sessions, loginAttempts)
