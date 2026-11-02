@@ -68,7 +68,7 @@ npm start
 
 Następnie otwórz w przeglądarce adres `http://127.0.0.1:3000`.
 
-Port możesz zmienić zmienną środowiskową `PORT`. Aplikacja odmówi uruchomienia na innym adresie niż `127.0.0.1`, chyba że świadomie użyjesz flagi `--i-understand-the-risks`. Nie rób tego, jeśli nie wiesz dokładnie, co robisz.
+Port możesz zmienić zmienną środowiskową `PORT`. Domyślny adres nasłuchu to `127.0.0.1`; ustawienie `HOST` na inny adres wymaga flagi `--i-understand-the-risks`, która wyświetla głośne ostrzeżenie. Nie rób tego, jeśli nie wiesz dokładnie, co robisz.
 
 ### Tryb demo
 

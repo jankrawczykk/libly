@@ -3,9 +3,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node -e \"console.log('Server placeholder: server implementation is scheduled for Milestone 2.')\"",
-    "build": "tsc --noEmit --project tsconfig.json",
-    "start": "node -e \"console.log('Server placeholder: server implementation is scheduled for Milestone 2.')\"",
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc --project tsconfig.build.json",
+    "start": "node dist/main.js",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "fastify": "5.12.8",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "tsx": "4.23.15"
   }
 }

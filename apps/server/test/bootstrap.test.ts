@@ -1,6 +1,11 @@
 import { expect, test } from 'vitest'
-import { SERVER_BOOTSTRAP_STATUS } from '../src/index.js'
+import { createServer } from '../src/index.js'
 
-test('server workspace bootstrap is available', () => {
-  expect(SERVER_BOOTSTRAP_STATUS).toBe('Milestone 2 pending')
+test('server app is available without adding application routes', async () => {
+  const app = createServer()
+
+  const response = await app.inject({ method: 'GET', url: '/' })
+
+  expect(response.statusCode).toBe(404)
+  await app.close()
 })
