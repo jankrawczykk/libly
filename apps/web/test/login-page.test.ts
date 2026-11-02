@@ -1,6 +1,7 @@
 import { QueryClientProvider } from '@tanstack/react-query'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { MemoryRouter } from 'react-router-dom'
 import { expect, test } from 'vitest'
 import { createQueryClient } from '../src/app/query-client.js'
 import { LoginPage } from '../src/features/login/login-page.js'
@@ -13,7 +14,7 @@ test('explains local demo privacy and does not request unavailable credentials',
     createElement(
       QueryClientProvider,
       { client: queryClient },
-      createElement(LoginPage),
+      createElement(MemoryRouter, null, createElement(LoginPage)),
     ),
   )
 

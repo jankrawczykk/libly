@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { ApiClientError, apiClient } from '../../api/client.js'
 import { t } from '../../i18n/index.js'
 import styles from './login-page.module.css'
@@ -7,14 +8,17 @@ const SESSION_QUERY_KEY = ['session']
 
 export function LoginPage() {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const sessionQuery = useQuery({
     queryKey: SESSION_QUERY_KEY,
     queryFn: apiClient.getSession,
   })
   const demoSession = useMutation({
     mutationFn: apiClient.createDemoSession,
-    onSuccess: async () =>
-      queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY }),
+    onSuccess: () => {
+      queryClient.setQueryData(SESSION_QUERY_KEY, { authenticated: true })
+      void navigate('/dashboard')
+    },
   })
 
   const demoErrorMessage =
