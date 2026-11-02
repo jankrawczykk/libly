@@ -1,0 +1,10 @@
+:root {
+  --color-text: #222222;
+  --color-text-muted: #595959;
+  --color-background: #ffffff;
+  --font-family: system-ui, sans-serif;
+  --font-size-heading: 2rem;
+  --space-4: 1rem;
+  --space-12: 3rem;
+  --content-width: 40rem;
+}

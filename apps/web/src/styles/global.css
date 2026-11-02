@@ -1,0 +1,22 @@
+@import './tokens.css';
+
+:root {
+  color: var(--color-text);
+  background: var(--color-background);
+  font-family: var(--font-family);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  min-width: 20rem;
+  min-height: 100vh;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
