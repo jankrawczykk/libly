@@ -12,7 +12,10 @@ test('web providers use short-lived in-memory server state', () => {
   expect(client.getQueryCache().getAll()).toEqual([])
 })
 
-test('Polish translations provide the application scaffold strings', () => {
+test('Polish translations provide the login page scaffold strings', () => {
   expect(t('app.title')).toBe('Libly')
-  expect(t('app.foundationStatus')).toBe('Aplikacja jest przygotowywana.')
+  expect(t('login.startDemo')).toBe('Uruchom tryb demo')
+  expect(t('login.librusUnavailable')).toContain(
+    'Nie wpisuj tu loginu ani hasła',
+  )
 })

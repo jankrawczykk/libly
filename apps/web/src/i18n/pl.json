@@ -1,9 +1,22 @@
 {
   "app.title": "Libly",
-  "app.foundationStatus": "Aplikacja jest przygotowywana.",
   "api.invalidResponse": "Serwer zwrócił nieprawidłową odpowiedź.",
   "api.unauthenticated": "Sesja wygasła. Zaloguj się ponownie.",
   "api.loginRateLimited": "Zbyt wiele nieudanych prób. Spróbuj ponownie później.",
   "api.refreshRateLimited": "Odświeżanie jest chwilowo niedostępne. Spróbuj ponownie później.",
-  "api.requestFailed": "Nie udało się wykonać żądania. Spróbuj ponownie."
+  "api.requestFailed": "Nie udało się wykonać żądania. Spróbuj ponownie.",
+  "login.eyebrow": "Twoje statystyki szkolne",
+  "login.intro": "Sprawdź dane w bezpiecznym, lokalnym trybie demo.",
+  "login.privacyTitle": "Twoja prywatność",
+  "login.privacyExplanation": "Libly działa na Twoim komputerze. Tryb demo korzysta wyłącznie z danych syntetycznych i nie łączy się z Librusem.",
+  "login.checkingSession": "Sprawdzam stan sesji…",
+  "login.sessionStatusError": "Nie udało się sprawdzić sesji. Upewnij się, że lokalny serwer działa, i spróbuj ponownie.",
+  "login.sessionActive": "Sesja jest aktywna.",
+  "login.sessionInactive": "Nie ma aktywnej sesji.",
+  "login.retry": "Spróbuj ponownie",
+  "login.startDemo": "Uruchom tryb demo",
+  "login.startingDemo": "Uruchamiam tryb demo…",
+  "login.demoStarted": "Tryb demo jest gotowy. Dane są wyłącznie syntetyczne.",
+  "login.demoError": "Nie udało się uruchomić trybu demo. Spróbuj ponownie.",
+  "login.librusUnavailable": "Logowanie do Librusa nie jest jeszcze dostępne. Nie wpisuj tu loginu ani hasła; poczekaj na ukończenie i sprawdzenie integracji."
 }

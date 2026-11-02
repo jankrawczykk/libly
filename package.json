@@ -12,7 +12,7 @@
     "packages/core"
   ],
   "scripts": {
-    "dev": "npm run build --workspace=@libly/core && npm run dev --workspaces --if-present --parallel",
+    "dev": "npm run build --workspace=@libly/core && node scripts/dev.mjs",
     "build": "npm run build --workspace=@libly/core && npm run build --workspace=@libly/server && npm run build --workspace=@libly/web",
     "start": "npm run start --workspace=@libly/server",
     "lint": "npm run build --workspace=@libly/core && eslint apps packages",

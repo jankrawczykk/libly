@@ -75,7 +75,7 @@ Port możesz zmienić zmienną środowiskową `PORT`. Domyślny adres nasłuchu 
 
 ### Tryb demo
 
-Na ekranie logowania wybierz przycisk trybu demo. Aplikacja pokaże sztuczne dane i nie połączy się z Librusem. Tryb demo jest też bezpiecznym sposobem na wypróbowanie aplikacji oraz na tworzenie zrzutów ekranu do zgłoszeń.
+Na ekranie logowania wybierz przycisk trybu demo. Aplikacja pokaże sztuczne dane i nie połączy się z Librusem. Tryb demo jest też bezpiecznym sposobem na wypróbowanie aplikacji oraz na tworzenie zrzutów ekranu do zgłoszeń. Logowanie do Librusa nie jest jeszcze dostępne; nie wpisuj loginu ani hasła w aplikacji.
 
 ## Ustawienia szkoły
 
