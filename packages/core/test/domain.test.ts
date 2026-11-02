@@ -8,6 +8,7 @@ import {
   migrateSchoolProfile,
   SchoolProfileSchema,
   SubjectRuleSchema,
+  suggestSubjectCategory,
   TermStructureSchema,
   UnsupportedSchoolProfileVersionError,
 } from '../src/index.js'
@@ -152,5 +153,36 @@ describe('domain schemas', () => {
     expect(() =>
       migrateSchoolProfile({ ...validProfile, schoolType: 'unknown' }),
     ).toThrow()
+  })
+})
+
+describe('subject category suggestions', () => {
+  test.each([
+    ['Praktyki zawodowe', 'work_placement'],
+    ['Zajęcia praktyczne', 'practical_classes'],
+    ['WYCHOWANIE FIZYCZNE', 'physical_education'],
+    ['WF', 'physical_education'],
+    ['Religia', 'religion_ethics'],
+    ['etyka', 'religion_ethics'],
+    ['Zachowanie', 'behavior'],
+  ] as const)('suggests a category for "%s"', (subject, category) => {
+    expect(suggestSubjectCategory(subject)).toBe(category)
+  })
+
+  test('normalizes Polish characters and punctuation', () => {
+    expect(suggestSubjectCategory('   ZAJĘCIA—PRAKTYCZNE ')).toBe(
+      'practical_classes',
+    )
+  })
+
+  test('returns null for names without a known keyword', () => {
+    expect(suggestSubjectCategory('Matematyka')).toBeNull()
+    expect(suggestSubjectCategory('')).toBeNull()
+  })
+
+  test('prefers the work placement category when both cues appear', () => {
+    expect(
+      suggestSubjectCategory('Zajęcia praktyczne podczas praktyk zawodowych'),
+    ).toBe('work_placement')
   })
 })
