@@ -1,0 +1,9 @@
+{
+  "app.title": "Libly",
+  "app.foundationStatus": "Aplikacja jest przygotowywana.",
+  "api.invalidResponse": "Serwer zwrócił nieprawidłową odpowiedź.",
+  "api.unauthenticated": "Sesja wygasła. Zaloguj się ponownie.",
+  "api.loginRateLimited": "Zbyt wiele nieudanych prób. Spróbuj ponownie później.",
+  "api.refreshRateLimited": "Odświeżanie jest chwilowo niedostępne. Spróbuj ponownie później.",
+  "api.requestFailed": "Nie udało się wykonać żądania. Spróbuj ponownie."
+}
