@@ -12,7 +12,6 @@ permissions:
   actions: read
   contents: read
   packages: read
-  security-events: write
 
 jobs:
   analyze:
@@ -29,3 +28,5 @@ jobs:
 
       - name: Analyze
         uses: github/codeql-action/analyze@0fa1882f994fbd81a47ab0804f93354f5ea40147
+        with:
+          upload: false
