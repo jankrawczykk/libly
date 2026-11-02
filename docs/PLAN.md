@@ -426,6 +426,7 @@ This milestone gates the real adapter. Everything else can proceed in parallel u
 * T1.4 Absence buffer and recovery formulas with tests for boundaries (`t = 0`, `t = 1`, already below, already above).
 * T1.5 Weighted average, `+` and `-` handling, and target grade calculator.
 * T1.6 Synthetic fixture generator that produces a realistic school year of attendance and grades for the demo adapter.
+  The generator takes an explicit seed, semester date ranges, subject list, weekly lesson cadence, and grade value range. It is deterministic, uses weekdays only, marks raw attendance symbols as synthetic placeholders, and does not invent a school calendar, grade scale, actual attendance symbols, or real student data.
 
 ### Milestone 2, server
 
