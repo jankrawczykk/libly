@@ -1,0 +1,30 @@
+name: Propozycja funkcji
+description: Zaproponuj zmianę bez udostępniania prawdziwych danych.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        **Nigdy nie dołączaj loginu, hasła ani prawdziwych danych szkolnych lub
+        uczniowskich.**
+  - type: textarea
+    id: problem
+    attributes:
+      label: Jaki problem rozwiązuje ta propozycja?
+      description: Opisz potrzebę bez prawdziwych danych.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proponowane rozwiązanie
+      description: Jakiej zmiany oczekujesz?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatywy
+      description: Jakie inne rozwiązania rozważałeś?
+    validations:
+      required: false
