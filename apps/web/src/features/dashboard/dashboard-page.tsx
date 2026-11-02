@@ -4,6 +4,7 @@ import {
   getSchoolProfilePreset,
   SchoolTypeSchema,
   SCHOOL_TYPES,
+  type AttendancePeriodSummary,
   type AttendanceStatus,
   type SchoolType,
 } from '@libly/core'
@@ -24,6 +25,12 @@ import styles from './dashboard-page.module.css'
 
 const SESSION_QUERY_KEY = ['session'] as const
 const ATTENDANCE_QUERY_KEY = ['attendance'] as const
+type AttendancePeriod = keyof AttendancePeriodSummary
+const ATTENDANCE_PERIODS: readonly AttendancePeriod[] = [
+  'year',
+  'semester1',
+  'semester2',
+]
 
 const SCHOOL_TYPE_TRANSLATION_KEYS: Record<SchoolType, TranslationKey> = {
   primary: 'school.primary',
@@ -50,6 +57,15 @@ const ATTENDANCE_STATUS_ICONS: Record<AttendanceStatus, string> = {
   warning: '!',
   ok: '✓',
   unknown: '—',
+}
+
+const ATTENDANCE_PERIOD_TRANSLATION_KEYS: Record<
+  AttendancePeriod,
+  TranslationKey
+> = {
+  year: 'dashboard.periodYear',
+  semester1: 'dashboard.periodSemesterOne',
+  semester2: 'dashboard.periodSemesterTwo',
 }
 
 function formatPercentage(percentage: number | null): string {
@@ -189,6 +205,7 @@ function DashboardContent({
   schoolType: SchoolType
   onChangeProfile: () => void
 }) {
+  const [selectedPeriod, setSelectedPeriod] = useState<AttendancePeriod>('year')
   const attendanceQuery = useQuery({
     queryKey: ATTENDANCE_QUERY_KEY,
     queryFn: apiClient.getAttendance,
@@ -222,18 +239,21 @@ function DashboardContent({
     attendanceQuery.data,
     profilePreset.profile,
   )
-  const overall = summary.overall.year
+  const periodLabel = t(ATTENDANCE_PERIOD_TRANSLATION_KEYS[selectedPeriod])
+  const overall = summary.overall[selectedPeriod]
   const orderedSubjects = [...summary.subjects].sort((first, second) => {
-    if (first.year.percentage === null) {
-      return second.year.percentage === null
+    const firstPercentage = first[selectedPeriod].percentage
+    const secondPercentage = second[selectedPeriod].percentage
+    if (firstPercentage === null) {
+      return secondPercentage === null
         ? first.subject.localeCompare(second.subject, 'pl')
         : 1
     }
-    if (second.year.percentage === null) {
+    if (secondPercentage === null) {
       return -1
     }
     return (
-      first.year.percentage - second.year.percentage ||
+      firstPercentage - secondPercentage ||
       first.subject.localeCompare(second.subject, 'pl')
     )
   })
@@ -257,11 +277,33 @@ function DashboardContent({
         })}
       </p>
 
+      <div
+        className={styles['periodSwitcher']}
+        role="group"
+        aria-label={t('dashboard.periodSelector')}
+      >
+        {ATTENDANCE_PERIODS.map((period) => (
+          <button
+            aria-pressed={selectedPeriod === period}
+            className={styles['periodButton']}
+            key={period}
+            onClick={() => {
+              setSelectedPeriod(period)
+            }}
+            type="button"
+          >
+            {t(ATTENDANCE_PERIOD_TRANSLATION_KEYS[period])}
+          </button>
+        ))}
+      </div>
+
       <section
         className={styles['overallCard']}
         aria-labelledby="overall-title"
       >
-        <h2 id="overall-title">{t('dashboard.overallAttendance')}</h2>
+        <h2 id="overall-title">
+          {t('dashboard.overallAttendanceForPeriod', { period: periodLabel })}
+        </h2>
         <p className={styles['overallValue']}>
           {formatPercentage(overall.percentage)}
         </p>
@@ -275,20 +317,6 @@ function DashboardContent({
             counted: overall.countedLessons,
           })}
         </p>
-        <div className={styles['semesterGrid']}>
-          <p>
-            <span>{t('dashboard.semesterOne')}</span>
-            <strong>
-              {formatPercentage(summary.overall.semester1.percentage)}
-            </strong>
-          </p>
-          <p>
-            <span>{t('dashboard.semesterTwo')}</span>
-            <strong>
-              {formatPercentage(summary.overall.semester2.percentage)}
-            </strong>
-          </p>
-        </div>
       </section>
 
       <section
@@ -306,15 +334,17 @@ function DashboardContent({
                   <h3>{subject.subject}</h3>
                   <p>
                     {t('dashboard.lessonCount', {
-                      present: subject.year.presentLessons,
-                      counted: subject.year.countedLessons,
+                      present: subject[selectedPeriod].presentLessons,
+                      counted: subject[selectedPeriod].countedLessons,
                     })}
                   </p>
                 </div>
                 <div className={styles['subjectResult']}>
-                  <strong>{formatPercentage(subject.year.percentage)}</strong>
+                  <strong>
+                    {formatPercentage(subject[selectedPeriod].percentage)}
+                  </strong>
                   <AttendanceStatusBadge
-                    percentage={subject.year.percentage}
+                    percentage={subject[selectedPeriod].percentage}
                     thresholds={profilePreset.profile.attendance}
                   />
                 </div>
