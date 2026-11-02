@@ -91,7 +91,7 @@ Szkoły różnią się zasadami, więc Libly niczego nie zakłada na sztywno. Pr
 | Pomijane rodzaje wpisów | zwolnienia, wycieczki | Te wpisy nie wchodzą do wyliczeń |
 | Symbole frekwencji | typowe symbole Librusa | Jeśli Twoja szkoła ma własne symbole, przypiszesz je ręcznie do rodzajów wpisów |
 | Semestry lub trymestry | dwa semestry | Daty możesz zmienić |
-| Kategoria przedmiotu | wykrywana automatycznie | Ogólny, zawodowy, zajęcia praktyczne, praktyki zawodowe, wychowanie fizyczne, religia lub etyka, zachowanie. Zawsze możesz poprawić. |
+| Kategoria przedmiotu | sugerowana automatycznie, wymaga potwierdzenia | Ogólny, zawodowy, zajęcia praktyczne, praktyki zawodowe, wychowanie fizyczne, religia lub etyka, zachowanie. Możesz poprawić każdą sugestię; nierozpoznane nazwy nie dostają kategorii automatycznie. |
 | Progi dla pojedynczego przedmiotu | brak | Możesz ustawić inny próg dla wybranego przedmiotu, na przykład dla praktyk |
 | Praktyki zawodowe i zajęcia praktyczne | osobna średnia | Wykluczenie ze średniej, zwykły przedmiot albo osobna średnia |
 | Skala ocen | 1 do 6 | Możesz wybrać też punkty lub procenty, a wartość plusa i minusa ustawisz sam |

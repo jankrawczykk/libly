@@ -212,7 +212,7 @@ The exact symbol mapping from Librus to `AttendanceKind` is an open question unt
 * Presets do not guess attendance symbol mappings or school term dates. They leave the symbol map and term list empty for the user to configure from their school's rules; an empty term list is valid until configured.
 * Settings are validated by a zod schema with a `version` field and a migration function, so older stored profiles keep working.
 * The profile can be exported to and imported from a JSON file. The file contains no personal data, which makes it possible to share a preset for a specific school. Community presets can be added by PR to `packages/core/presets/community/` after review.
-* Subjects found in the user's Librus data are auto categorized by simple keyword rules (for example names containing "praktyk" or "zajęcia praktyczne"), always shown to the user for confirmation, and never silently final.
+* Subjects found in the user's Librus data are offered category suggestions by simple keyword rules (for example names containing "praktyk" or "zajęcia praktyczne"). Suggestions must always be confirmed by the user and are never silently applied; names without a known keyword receive no suggestion.
 
 ## 6. Statistics definitions
 

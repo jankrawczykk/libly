@@ -90,6 +90,39 @@ export const SUBJECT_CATEGORIES = [
 export const SubjectCategorySchema = z.enum(SUBJECT_CATEGORIES)
 export type SubjectCategory = z.infer<typeof SubjectCategorySchema>
 
+const SUBJECT_CATEGORY_KEYWORDS: readonly {
+  category: SubjectCategory
+  keywords: readonly string[]
+}[] = [
+  { category: 'work_placement', keywords: ['praktyk'] },
+  { category: 'practical_classes', keywords: ['zajecia praktycz'] },
+  {
+    category: 'physical_education',
+    keywords: ['wychowanie fizyczne', ' wf '],
+  },
+  { category: 'religion_ethics', keywords: ['religia', 'etyka'] },
+  { category: 'behavior', keywords: ['zachowanie'] },
+]
+
+export function suggestSubjectCategory(
+  subject: string,
+): SubjectCategory | null {
+  const normalizedSubject = ` ${subject
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replace(/[^\p{Letter}\p{Number}]+/gu, ' ')
+    .trim()} `
+
+  for (const { category, keywords } of SUBJECT_CATEGORY_KEYWORDS) {
+    if (keywords.some((keyword) => normalizedSubject.includes(keyword))) {
+      return category
+    }
+  }
+
+  return null
+}
+
 export const SubjectRuleSchema = z
   .object({
     subject: nonBlankString,
