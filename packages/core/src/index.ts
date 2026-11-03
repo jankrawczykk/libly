@@ -235,6 +235,23 @@ export const SchoolProfileSchema = z
     subjectRules: z.array(SubjectRuleSchema),
   })
   .strict()
+  .superRefine((profile, context) => {
+    profile.subjectRules.forEach((rule, index) => {
+      const criticalThreshold =
+        rule.attendanceCriticalThreshold ?? profile.attendance.criticalThreshold
+      const warningThreshold =
+        rule.attendanceWarningThreshold ?? profile.attendance.warningThreshold
+
+      if (warningThreshold < criticalThreshold) {
+        context.addIssue({
+          code: 'custom',
+          path: ['subjectRules', index, 'attendanceWarningThreshold'],
+          message:
+            'Subject warning threshold must not be below its effective critical threshold',
+        })
+      }
+    })
+  })
 export type SchoolProfile = z.infer<typeof SchoolProfileSchema>
 
 export const SchoolProfilePresetSchema = z

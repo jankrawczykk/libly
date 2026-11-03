@@ -24,6 +24,7 @@ Plan funkcji jest rozłożony na etapy. Aktualny stan znajdziesz w sekcji Roadma
 * Frekwencja w procentach dla każdego przedmiotu, od najgorszej
 * Podświetlenie na czerwono lub bursztynowo przedmiotów poniżej progów (razem z ikoną i opisem, nie tylko kolorem)
 * Przełączanie wyników między całym rokiem a poszczególnymi semestrami
+* Edycja, import i eksport profilu szkoły w ustawieniach
 * Pełne dopasowanie do Twojej szkoły (typ szkoły, próg frekwencji ze statutu, zasady liczenia, praktyki zawodowe), opisane niżej w sekcji Ustawienia szkoły
 * Ile lekcji możesz jeszcze opuścić i ile musisz być obecny, żeby wrócić nad próg
 * Symulator frekwencji i ocen
@@ -38,7 +39,7 @@ Plan funkcji jest rozłożony na etapy. Aktualny stan znajdziesz w sekcji Roadma
 Bezpieczeństwo jest najważniejszym założeniem projektu.
 
 * **Wszystko dzieje się na Twoim komputerze.** Domyślnie serwer aplikacji nasłuchuje tylko na `127.0.0.1`, a nieprawidłowe nagłówki `Host` są odrzucane.
-* **Hasło nie jest zapisywane.** Trafia do lokalnego serwera tylko po to, żeby zalogować się do Librusa, a zaraz potem jest porzucane. Nie ma bazy danych ani plików z danymi; `localStorage` przechowuje wyłącznie niesekretny wybór typu szkoły.
+* **Hasło nie jest zapisywane.** Trafia do lokalnego serwera tylko po to, żeby zalogować się do Librusa, a zaraz potem jest porzucane. Nie ma bazy danych ani plików z danymi; `localStorage` przechowuje wyłącznie niesekretne ustawienia profilu szkoły.
 * **Dane trzymamy tylko w pamięci** i znikają po wylogowaniu, po wygaśnięciu sesji albo po zamknięciu aplikacji.
 * **Sesja ma ograniczony czas życia.** Wygasa po 15 minutach bez aktywności albo po 60 minutach łącznie; wylogowanie usuwa ją od razu.
 * **Nieprawidłowe próby utworzenia sesji są ograniczane.** Po pięciu błędach w ruchomym oknie minuty kolejne żądania otrzymują `429` z czasem oczekiwania; po każdym błędzie rośnie wykładniczo cooldown.

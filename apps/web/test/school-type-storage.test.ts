@@ -1,9 +1,11 @@
+import { getSchoolProfilePreset } from '@libly/core'
 import { expect, test } from 'vitest'
 import {
-  clearSchoolTypePreference,
-  InvalidSchoolTypePreferenceError,
-  readSchoolTypePreference,
-  saveSchoolTypePreference,
+  clearSchoolProfilePreference,
+  InvalidSchoolProfilePreferenceError,
+  readSchoolProfilePreference,
+  saveSchoolProfilePreference,
+  SCHOOL_PROFILE_STORAGE_KEY,
   SCHOOL_TYPE_STORAGE_KEY,
 } from '../src/features/dashboard/school-type-storage.js'
 
@@ -20,22 +22,49 @@ function createMemoryStorage() {
   }
 }
 
-test('reads, schema-validates, and clears only the school type preference', () => {
+test('stores, validates, and clears the complete school profile', () => {
   const storage = createMemoryStorage()
+  const profile = getSchoolProfilePreset('technikum').profile
 
-  expect(readSchoolTypePreference(storage)).toBeNull()
-  saveSchoolTypePreference(storage, 'technikum')
-  expect(storage.getItem(SCHOOL_TYPE_STORAGE_KEY)).toBe('technikum')
-  expect(readSchoolTypePreference(storage)).toBe('technikum')
-  clearSchoolTypePreference(storage)
-  expect(readSchoolTypePreference(storage)).toBeNull()
+  expect(readSchoolProfilePreference(storage)).toBeNull()
+  saveSchoolProfilePreference(storage, profile)
+  expect(storage.getItem(SCHOOL_PROFILE_STORAGE_KEY)).toBe(
+    JSON.stringify(profile),
+  )
+  expect(readSchoolProfilePreference(storage)).toEqual(profile)
+  clearSchoolProfilePreference(storage)
+  expect(readSchoolProfilePreference(storage)).toBeNull()
 })
 
-test('fails closed on an invalid persisted school type', () => {
+test('migrates the stored school type to its validated preset profile', () => {
+  const storage = createMemoryStorage()
+  storage.setItem(SCHOOL_TYPE_STORAGE_KEY, 'technikum')
+
+  expect(readSchoolProfilePreference(storage)).toEqual(
+    getSchoolProfilePreset('technikum').profile,
+  )
+  expect(storage.getItem(SCHOOL_TYPE_STORAGE_KEY)).toBeNull()
+  expect(storage.getItem(SCHOOL_PROFILE_STORAGE_KEY)).not.toBeNull()
+})
+
+test('rejects invalid and unsupported stored profiles', () => {
+  const storage = createMemoryStorage()
+  storage.setItem(SCHOOL_PROFILE_STORAGE_KEY, '{not json')
+  expect(() => readSchoolProfilePreference(storage)).toThrow(
+    InvalidSchoolProfilePreferenceError,
+  )
+
+  storage.setItem(SCHOOL_PROFILE_STORAGE_KEY, JSON.stringify({ version: 99 }))
+  expect(() => readSchoolProfilePreference(storage)).toThrow(
+    InvalidSchoolProfilePreferenceError,
+  )
+})
+
+test('rejects invalid legacy school types', () => {
   const storage = createMemoryStorage()
   storage.setItem(SCHOOL_TYPE_STORAGE_KEY, 'fictional_school')
 
-  expect(() => readSchoolTypePreference(storage)).toThrow(
-    InvalidSchoolTypePreferenceError,
+  expect(() => readSchoolProfilePreference(storage)).toThrow(
+    InvalidSchoolProfilePreferenceError,
   )
 })
