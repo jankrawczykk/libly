@@ -64,7 +64,9 @@ export async function startServer(
     warn(RISK_WARNING)
   }
 
-  const app = createServer(config)
+  const app = createServer(config, undefined, undefined, undefined, undefined, {
+    serveWeb: true,
+  })
   await app.listen({ host: config.host, port: config.port })
   registerGracefulShutdown(app, signals)
   return app

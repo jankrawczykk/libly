@@ -19,7 +19,22 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testMatch: '**/demo.spec.ts',
       use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'production',
+      testMatch: '**/production.spec.ts',
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'http://127.0.0.1:3000',
+      },
+      webServer: {
+        command: 'npm run build && npm start',
+        url: 'http://127.0.0.1:3000',
+        reuseExistingServer: !process.env['CI'],
+        timeout: 120_000,
+      },
     },
   ],
 })
