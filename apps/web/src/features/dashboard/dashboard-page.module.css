@@ -294,6 +294,18 @@
   white-space: nowrap;
 }
 
+.attendanceGuidance {
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-small);
+  line-height: 1.5;
+  text-align: right;
+}
+
+.attendanceGuidance p {
+  margin: 0;
+}
+
 .error {
   color: var(--color-error);
 }

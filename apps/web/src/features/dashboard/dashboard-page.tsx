@@ -1,7 +1,9 @@
 import {
   ATTENDANCE_KINDS,
   AttendanceKindSchema,
+  calculateAbsenceBuffer,
   calculateAttendanceSummary,
+  calculateRecoveryRequirement,
   classifyAttendanceStatus,
   getSchoolProfilePreset,
   SUBJECT_CATEGORIES,
@@ -12,6 +14,8 @@ import {
   type AttendancePeriodSummary,
   type AttendanceStatus,
   type AttendanceKind,
+  type AbsenceBuffer,
+  type RecoveryRequirement,
   type SchoolProfile,
   type SubjectCategory,
   type SchoolType,
@@ -130,6 +134,47 @@ function getStatusPercentage(
   return semesterPercentages.length === 0
     ? null
     : Math.min(...semesterPercentages)
+}
+
+function getSubjectThreshold(
+  schoolProfile: SchoolProfile,
+  subject: string,
+): number {
+  return (
+    schoolProfile.subjectRules.find((rule) => rule.subject === subject)
+      ?.attendanceCriticalThreshold ??
+    schoolProfile.attendance.criticalThreshold
+  )
+}
+
+function AttendanceGuidance({
+  buffer,
+  recovery,
+}: {
+  buffer: AbsenceBuffer
+  recovery: RecoveryRequirement
+}) {
+  const bufferMessage =
+    buffer.kind === 'finite'
+      ? t('dashboard.absenceBuffer', { lessons: buffer.lessons })
+      : buffer.kind === 'unlimited'
+        ? t('dashboard.absenceBufferUnlimited')
+        : t('dashboard.absenceBufferUnavailable')
+  const recoveryMessage =
+    recovery.kind === 'finite'
+      ? recovery.lessons === 0
+        ? t('dashboard.recoveryNotNeeded')
+        : t('dashboard.recoveryRequirement', { lessons: recovery.lessons })
+      : recovery.kind === 'impossible'
+        ? t('dashboard.recoveryImpossible')
+        : t('dashboard.recoveryUnavailable')
+
+  return (
+    <div className={styles['attendanceGuidance']}>
+      <p>{bufferMessage}</p>
+      <p>{recoveryMessage}</p>
+    </div>
+  )
 }
 
 function AttendanceStatusBadge({
@@ -729,6 +774,16 @@ function DashboardContent({
                       }}
                     />
                   ) : null}
+                  <AttendanceGuidance
+                    buffer={calculateAbsenceBuffer(
+                      subject[selectedPeriod],
+                      getSubjectThreshold(schoolProfile, subject.subject),
+                    )}
+                    recovery={calculateRecoveryRequirement(
+                      subject[selectedPeriod],
+                      getSubjectThreshold(schoolProfile, subject.subject),
+                    )}
+                  />
                 </div>
               </li>
             ))}
