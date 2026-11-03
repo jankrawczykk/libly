@@ -49,7 +49,7 @@ Bezpieczeństwo jest najważniejszym założeniem projektu.
 * **Aplikacja tylko czyta.** Nie wysyła ani nie usuwa wiadomości i niczego nie zmienia na Twoim koncie.
 * **Uczciwe zastrzeżenie.** JavaScript nie pozwala w pełni wyczyścić pamięci, więc nie obiecujemy zerowania haseł w RAM. Obiecujemy, że hasło nigdy nie trafia na dysk ani do sieci poza Librusem.
 
-Jak sprawdzić to samodzielnie. Otwórz narzędzia deweloperskie w przeglądarce, zakładkę Sieć, i zobacz, że wszystkie zapytania idą pod `127.0.0.1`. Kod jest otwarty, więc możesz też przeczytać go sam. Szczegóły modelu zagrożeń są w [`docs/PLAN.md`](docs/PLAN.md).
+Jak sprawdzić to samodzielnie. Otwórz narzędzia deweloperskie w przeglądarce, zakładkę Sieć, i zobacz, że wszystkie zapytania idą pod `127.0.0.1`. Kod jest otwarty, więc możesz też przeczytać go sam. Szczegóły modelu zagrożeń są w [`docs/PLAN.md`](docs/PLAN.md), a krótka instrukcja w [`docs/how-to-verify-local.md`](docs/how-to-verify-local.md).
 
 Nie wystawiaj tej aplikacji publicznie w internecie i nie hostuj jej dla innych osób. To pogwałciłoby jej założenia bezpieczeństwa.
 
