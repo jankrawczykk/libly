@@ -136,6 +136,27 @@ describe('domain schemas', () => {
     ).toBe(false)
   })
 
+  test('rejects subject thresholds that conflict with the profile defaults', () => {
+    const profileWithCriticalOverride = {
+      ...validProfile,
+      subjectRules: [
+        {
+          subject: validProfile.subjectRules[0].subject,
+          category: validProfile.subjectRules[0].category,
+          includeInOverallAverage:
+            validProfile.subjectRules[0].includeInOverallAverage,
+          includeInOverallAttendance:
+            validProfile.subjectRules[0].includeInOverallAttendance,
+          attendanceCriticalThreshold: 70,
+        },
+      ],
+    }
+
+    expect(
+      SchoolProfileSchema.safeParse(profileWithCriticalOverride).success,
+    ).toBe(false)
+  })
+
   test('allows an unconfigured term structure without inventing school dates', () => {
     expect(
       TermStructureSchema.safeParse({

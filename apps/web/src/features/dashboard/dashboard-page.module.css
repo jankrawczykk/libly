@@ -30,6 +30,13 @@
   gap: var(--space-4);
 }
 
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
 .header h1,
 .card h1,
 .card h2,
@@ -278,6 +285,10 @@
   .header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .headerActions {
+    align-items: flex-start;
   }
 
   .periodSwitcher {

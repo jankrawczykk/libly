@@ -6,6 +6,7 @@ import {
   SCHOOL_TYPES,
   type AttendancePeriodSummary,
   type AttendanceStatus,
+  type SchoolProfile,
   type SchoolType,
 } from '@libly/core'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -15,11 +16,11 @@ import { Link, Navigate } from 'react-router-dom'
 import { ApiClientError, apiClient } from '../../api/client.js'
 import { t, type TranslationKey } from '../../i18n/index.js'
 import {
-  clearSchoolTypePreference,
-  InvalidSchoolTypePreferenceError,
-  readSchoolTypePreference,
-  saveSchoolTypePreference,
-  SCHOOL_TYPE_QUERY_KEY,
+  clearSchoolProfilePreference,
+  InvalidSchoolProfilePreferenceError,
+  readSchoolProfilePreference,
+  saveSchoolProfilePreference,
+  SCHOOL_PROFILE_QUERY_KEY,
 } from './school-type-storage.js'
 import styles from './dashboard-page.module.css'
 
@@ -78,6 +79,27 @@ function formatPercentage(percentage: number | null): string {
   }).format(percentage)}%`
 }
 
+function getStatusPercentage(
+  summary: AttendancePeriodSummary,
+  period: AttendancePeriod,
+  thresholdPeriod: 'semester' | 'year',
+): number | null {
+  if (thresholdPeriod === 'year') {
+    return summary.year.percentage
+  }
+  if (period !== 'year') {
+    return summary[period].percentage
+  }
+
+  const semesterPercentages = [
+    summary.semester1.percentage,
+    summary.semester2.percentage,
+  ].filter((percentage): percentage is number => percentage !== null)
+  return semesterPercentages.length === 0
+    ? null
+    : Math.min(...semesterPercentages)
+}
+
 function AttendanceStatusBadge({
   percentage,
   thresholds,
@@ -108,7 +130,7 @@ function AttendanceStatusBadge({
 function ProfileSetup({
   onSaved,
 }: {
-  onSaved: (schoolType: SchoolType) => void
+  onSaved: (profile: SchoolProfile) => void
 }) {
   const [selectedSchoolType, setSelectedSchoolType] = useState<SchoolType | ''>(
     '',
@@ -127,8 +149,9 @@ function ProfileSetup({
     }
 
     try {
-      saveSchoolTypePreference(window.localStorage, result.data)
-      onSaved(result.data)
+      const profile = getSchoolProfilePreset(result.data).profile
+      saveSchoolProfilePreference(window.localStorage, profile)
+      onSaved(profile)
     } catch {
       setSaveError(true)
     }
@@ -199,10 +222,10 @@ function ProfileSetup({
 }
 
 function DashboardContent({
-  schoolType,
+  schoolProfile,
   onChangeProfile,
 }: {
-  schoolType: SchoolType
+  schoolProfile: SchoolProfile
   onChangeProfile: () => void
 }) {
   const [selectedPeriod, setSelectedPeriod] = useState<AttendancePeriod>('year')
@@ -210,8 +233,6 @@ function DashboardContent({
     queryKey: ATTENDANCE_QUERY_KEY,
     queryFn: apiClient.getAttendance,
   })
-  const profilePreset = getSchoolProfilePreset(schoolType)
-
   if (attendanceQuery.isPending) {
     return <p role="status">{t('dashboard.loading')}</p>
   }
@@ -237,7 +258,7 @@ function DashboardContent({
 
   const summary = calculateAttendanceSummary(
     attendanceQuery.data,
-    profilePreset.profile,
+    schoolProfile,
   )
   const periodLabel = t(ATTENDANCE_PERIOD_TRANSLATION_KEYS[selectedPeriod])
   const overall = summary.overall[selectedPeriod]
@@ -265,15 +286,31 @@ function DashboardContent({
           <p className={styles['eyebrow']}>{t('app.title')}</p>
           <h1 id="dashboard-title">{t('dashboard.title')}</h1>
         </div>
-        <button className={styles['secondaryButton']} onClick={onChangeProfile}>
-          {t('dashboard.changeSchoolType')}
-        </button>
+        <div className={styles['headerActions']}>
+          <Link className={styles['textLink']} to="/settings">
+            {t('dashboard.settings')}
+          </Link>
+          <button
+            className={styles['secondaryButton']}
+            onClick={onChangeProfile}
+          >
+            {t('dashboard.changeSchoolType')}
+          </button>
+        </div>
       </header>
 
       <p className={styles['presetNotice']}>
-        {t('dashboard.activePreset', {
-          schoolType: t(SCHOOL_TYPE_TRANSLATION_KEYS[schoolType]),
-          label: profilePreset.label,
+        {t('dashboard.activeProfile', {
+          schoolType: t(SCHOOL_TYPE_TRANSLATION_KEYS[schoolProfile.schoolType]),
+        })}
+      </p>
+      <p className={styles['presetNotice']}>
+        {t('dashboard.statusPeriodNote', {
+          period: t(
+            schoolProfile.attendance.period === 'year'
+              ? 'dashboard.thresholdPeriodYear'
+              : 'dashboard.thresholdPeriodSemester',
+          ),
         })}
       </p>
 
@@ -307,10 +344,17 @@ function DashboardContent({
         <p className={styles['overallValue']}>
           {formatPercentage(overall.percentage)}
         </p>
-        <AttendanceStatusBadge
-          percentage={overall.percentage}
-          thresholds={profilePreset.profile.attendance}
-        />
+        {schoolProfile.attendance.scope === 'overall' ||
+        schoolProfile.attendance.scope === 'both' ? (
+          <AttendanceStatusBadge
+            percentage={getStatusPercentage(
+              summary.overall,
+              selectedPeriod,
+              schoolProfile.attendance.period,
+            )}
+            thresholds={schoolProfile.attendance}
+          />
+        ) : null}
         <p>
           {t('dashboard.lessonCount', {
             present: overall.presentLessons,
@@ -343,10 +387,29 @@ function DashboardContent({
                   <strong>
                     {formatPercentage(subject[selectedPeriod].percentage)}
                   </strong>
-                  <AttendanceStatusBadge
-                    percentage={subject[selectedPeriod].percentage}
-                    thresholds={profilePreset.profile.attendance}
-                  />
+                  {schoolProfile.attendance.scope === 'per_subject' ||
+                  schoolProfile.attendance.scope === 'both' ? (
+                    <AttendanceStatusBadge
+                      percentage={getStatusPercentage(
+                        subject,
+                        selectedPeriod,
+                        schoolProfile.attendance.period,
+                      )}
+                      thresholds={{
+                        ...schoolProfile.attendance,
+                        criticalThreshold:
+                          schoolProfile.subjectRules.find(
+                            (rule) => rule.subject === subject.subject,
+                          )?.attendanceCriticalThreshold ??
+                          schoolProfile.attendance.criticalThreshold,
+                        warningThreshold:
+                          schoolProfile.subjectRules.find(
+                            (rule) => rule.subject === subject.subject,
+                          )?.attendanceWarningThreshold ??
+                          schoolProfile.attendance.warningThreshold,
+                      }}
+                    />
+                  ) : null}
                 </div>
               </li>
             ))}
@@ -365,9 +428,9 @@ export function DashboardPage() {
     queryKey: SESSION_QUERY_KEY,
     queryFn: apiClient.getSession,
   })
-  const schoolTypeQuery = useQuery({
-    queryKey: SCHOOL_TYPE_QUERY_KEY,
-    queryFn: () => readSchoolTypePreference(window.localStorage),
+  const schoolProfileQuery = useQuery({
+    queryKey: SCHOOL_PROFILE_QUERY_KEY,
+    queryFn: () => readSchoolProfilePreference(window.localStorage),
     enabled: sessionQuery.data?.authenticated === true,
     staleTime: Infinity,
   })
@@ -384,7 +447,7 @@ export function DashboardPage() {
     return <Navigate to="/" replace />
   }
 
-  if (schoolTypeQuery.isPending) {
+  if (schoolProfileQuery.isPending) {
     return (
       <main className={styles['page']}>
         <p role="status">{t('dashboard.loading')}</p>
@@ -392,7 +455,7 @@ export function DashboardPage() {
     )
   }
 
-  if (schoolTypeQuery.error instanceof InvalidSchoolTypePreferenceError) {
+  if (schoolProfileQuery.error instanceof InvalidSchoolProfilePreferenceError) {
     return (
       <main className={styles['page']}>
         <section
@@ -412,8 +475,8 @@ export function DashboardPage() {
             className={styles['secondaryButton']}
             onClick={() => {
               try {
-                clearSchoolTypePreference(window.localStorage)
-                queryClient.setQueryData(SCHOOL_TYPE_QUERY_KEY, null)
+                clearSchoolProfilePreference(window.localStorage)
+                queryClient.setQueryData(SCHOOL_PROFILE_QUERY_KEY, null)
                 setResetError(false)
               } catch {
                 setResetError(true)
@@ -428,7 +491,7 @@ export function DashboardPage() {
     )
   }
 
-  if (schoolTypeQuery.isError) {
+  if (schoolProfileQuery.isError) {
     return (
       <main className={styles['page']}>
         <p className={styles['error']} role="alert">
@@ -438,8 +501,8 @@ export function DashboardPage() {
     )
   }
 
-  const schoolType = schoolTypeQuery.data
-  if (schoolType === null || isEditingProfile) {
+  const schoolProfile = schoolProfileQuery.data
+  if (schoolProfile === null || isEditingProfile) {
     return (
       <main className={styles['page']}>
         <header className={styles['header']}>
@@ -452,8 +515,8 @@ export function DashboardPage() {
           </Link>
         </header>
         <ProfileSetup
-          onSaved={(selectedType) => {
-            queryClient.setQueryData(SCHOOL_TYPE_QUERY_KEY, selectedType)
+          onSaved={(profile) => {
+            queryClient.setQueryData(SCHOOL_PROFILE_QUERY_KEY, profile)
             queryClient.removeQueries({ queryKey: ATTENDANCE_QUERY_KEY })
             setIsEditingProfile(false)
           }}
@@ -465,7 +528,7 @@ export function DashboardPage() {
   return (
     <main className={styles['page']}>
       <DashboardContent
-        schoolType={schoolType}
+        schoolProfile={schoolProfile}
         onChangeProfile={() => {
           setIsEditingProfile(true)
         }}

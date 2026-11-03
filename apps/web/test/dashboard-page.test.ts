@@ -1,58 +1,68 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import {
+  getSchoolProfilePreset,
+  type AttendanceEntry,
+  type SchoolProfile,
+} from '@libly/core'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, test } from 'vitest'
 import { DashboardPage } from '../src/features/dashboard/dashboard-page.js'
 
-function renderDashboard() {
+const ATTENDANCE_ENTRIES: AttendanceEntry[] = [
+  {
+    date: '2026-09-01',
+    lessonNumber: 1,
+    subject: 'Matematyka',
+    kind: 'present',
+    rawSymbol: 'synthetic_present',
+    semester: 1,
+  },
+  {
+    date: '2026-09-02',
+    lessonNumber: 2,
+    subject: 'Historia',
+    kind: 'present',
+    rawSymbol: 'synthetic_present',
+    semester: 1,
+  },
+  {
+    date: '2026-09-03',
+    lessonNumber: 3,
+    subject: 'Historia',
+    kind: 'absent_unexcused',
+    rawSymbol: 'synthetic_absence',
+    semester: 1,
+  },
+  {
+    date: '2026-09-04',
+    lessonNumber: 4,
+    subject: 'Chemia',
+    kind: 'absent_unexcused',
+    rawSymbol: 'synthetic_absence',
+    semester: 1,
+  },
+  {
+    date: '2026-09-05',
+    lessonNumber: 5,
+    subject: 'Plastyka',
+    kind: 'exempt',
+    rawSymbol: 'synthetic_exempt',
+    semester: 1,
+  },
+]
+
+function renderDashboard(
+  profile = getSchoolProfilePreset('primary').profile,
+  additionalEntries: AttendanceEntry[] = [],
+) {
   const queryClient = new QueryClient()
   queryClient.setQueryData(['session'], { authenticated: true })
-  queryClient.setQueryData(['school-type'], 'primary')
+  queryClient.setQueryData(['school-profile'], profile)
   queryClient.setQueryData(
     ['attendance'],
-    [
-      {
-        date: '2026-09-01',
-        lessonNumber: 1,
-        subject: 'Matematyka',
-        kind: 'present',
-        rawSymbol: 'synthetic_present',
-        semester: 1,
-      },
-      {
-        date: '2026-09-02',
-        lessonNumber: 2,
-        subject: 'Historia',
-        kind: 'present',
-        rawSymbol: 'synthetic_present',
-        semester: 1,
-      },
-      {
-        date: '2026-09-03',
-        lessonNumber: 3,
-        subject: 'Historia',
-        kind: 'absent_unexcused',
-        rawSymbol: 'synthetic_absence',
-        semester: 1,
-      },
-      {
-        date: '2026-09-04',
-        lessonNumber: 4,
-        subject: 'Chemia',
-        kind: 'absent_unexcused',
-        rawSymbol: 'synthetic_absence',
-        semester: 1,
-      },
-      {
-        date: '2026-09-05',
-        lessonNumber: 5,
-        subject: 'Plastyka',
-        kind: 'exempt',
-        rawSymbol: 'synthetic_exempt',
-        semester: 1,
-      },
-    ],
+    [...ATTENDANCE_ENTRIES, ...additionalEntries],
   )
   const markup = renderToStaticMarkup(
     createElement(
@@ -89,11 +99,13 @@ test('orders subjects from lowest attendance to highest', () => {
   expect(historyPosition).toBeLessThan(mathematicsPosition)
 })
 
-test('shows the school preset as typical and asks users to verify it', () => {
+test('shows the active school profile and asks users to verify its rules', () => {
   const markup = renderDashboard()
 
-  expect(markup).toContain('Typowe wartości, sprawdź statut swojej szkoły')
-  expect(markup).toContain('Sprawdź wartości w statucie swojej szkoły')
+  expect(markup).toContain('Typ szkoły: Szkoła podstawowa')
+  expect(markup).toContain(
+    'Sprawdź ustawienia profilu w statucie swojej szkoły',
+  )
 })
 
 test('shows accessible text and icons for critical, warning, okay, and unknown statuses', () => {
@@ -108,4 +120,95 @@ test('shows accessible text and icons for critical, warning, okay, and unknown s
   )
   expect(markup).toContain('aria-hidden="true">!</span>')
   expect(markup).toContain('aria-hidden="true">✓</span>')
+})
+
+test('uses saved thresholds to recalculate attendance statuses', () => {
+  const profile: SchoolProfile = {
+    ...getSchoolProfilePreset('primary').profile,
+    attendance: {
+      ...getSchoolProfilePreset('primary').profile.attendance,
+      criticalThreshold: 80,
+      warningThreshold: 90,
+    },
+  }
+  const markup = renderDashboard(profile)
+
+  expect(markup).toContain('data-status="critical"')
+  expect(markup).toContain('Poniżej progu krytycznego')
+})
+
+test('shows status badges only in the configured attendance scope', () => {
+  const preset = getSchoolProfilePreset('primary').profile
+  const profile: SchoolProfile = {
+    ...preset,
+    attendance: { ...preset.attendance, scope: 'overall' },
+  }
+  const markup = renderDashboard(profile)
+
+  expect(markup.match(/Status frekwencji:/gu)).toHaveLength(1)
+})
+
+test('uses the configured evaluation period when classifying thresholds', () => {
+  const preset = getSchoolProfilePreset('primary').profile
+  const additionalEntries: AttendanceEntry[] = [
+    {
+      date: '2027-01-01',
+      lessonNumber: 1,
+      subject: 'Matematyka',
+      kind: 'present',
+      rawSymbol: 'synthetic_present',
+      semester: 2,
+    },
+    {
+      date: '2027-01-02',
+      lessonNumber: 2,
+      subject: 'Matematyka',
+      kind: 'absent_unexcused',
+      rawSymbol: 'synthetic_absence',
+      semester: 2,
+    },
+    {
+      date: '2027-01-03',
+      lessonNumber: 3,
+      subject: 'Matematyka',
+      kind: 'absent_unexcused',
+      rawSymbol: 'synthetic_absence',
+      semester: 2,
+    },
+    {
+      date: '2027-01-04',
+      lessonNumber: 4,
+      subject: 'Matematyka',
+      kind: 'absent_unexcused',
+      rawSymbol: 'synthetic_absence',
+      semester: 2,
+    },
+  ]
+  const rules: SchoolProfile['attendance'] = {
+    ...preset.attendance,
+    criticalThreshold: 30,
+    warningThreshold: 40,
+    scope: 'both',
+  }
+  const yearMarkup = renderDashboard(
+    {
+      ...preset,
+      attendance: { ...rules, period: 'year' },
+    },
+    additionalEntries,
+  )
+  const semesterMarkup = renderDashboard(
+    {
+      ...preset,
+      attendance: { ...rules, period: 'semester' },
+    },
+    additionalEntries,
+  )
+
+  expect(yearMarkup).toContain(
+    'aria-label="Status frekwencji: Poniżej progu ostrzegawczego"',
+  )
+  expect(semesterMarkup).toContain(
+    'aria-label="Status frekwencji: Poniżej progu krytycznego"',
+  )
 })
