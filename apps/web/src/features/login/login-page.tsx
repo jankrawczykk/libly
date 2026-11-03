@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { ApiClientError, apiClient } from '../../api/client.js'
 import { t } from '../../i18n/index.js'
 import styles from './login-page.module.css'
@@ -9,6 +9,7 @@ const SESSION_QUERY_KEY = ['session']
 export function LoginPage() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const location = useLocation()
   const sessionQuery = useQuery({
     queryKey: SESSION_QUERY_KEY,
     queryFn: apiClient.getSession,
@@ -25,6 +26,15 @@ export function LoginPage() {
     demoSession.error instanceof ApiClientError
       ? demoSession.error.message
       : t('login.demoError')
+  const locationState: unknown = location.state as unknown
+  const navigationReason =
+    typeof locationState === 'object' &&
+    locationState !== null &&
+    'reason' in locationState &&
+    (locationState.reason === 'session-expired' ||
+      locationState.reason === 'logged-out')
+      ? locationState.reason
+      : null
 
   return (
     <main className={styles['page']}>
@@ -34,6 +44,15 @@ export function LoginPage() {
           {t('app.title')}
         </h1>
         <p className={styles['intro']}>{t('login.intro')}</p>
+        {navigationReason === 'session-expired' ? (
+          <p className={styles['error']} role="alert">
+            {t('login.sessionExpired')}
+          </p>
+        ) : navigationReason === 'logged-out' ? (
+          <p className={styles['success']} role="status">
+            {t('login.loggedOut')}
+          </p>
+        ) : null}
 
         <aside className={styles['privacy']} aria-labelledby="privacy-title">
           <h2 id="privacy-title" className={styles['sectionTitle']}>

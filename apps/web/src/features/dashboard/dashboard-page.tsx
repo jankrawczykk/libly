@@ -16,10 +16,10 @@ import {
   type SubjectCategory,
   type SchoolType,
 } from '@libly/core'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { SyntheticEvent } from 'react'
 import { useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { ApiClientError, apiClient } from '../../api/client.js'
 import { t, type TranslationKey } from '../../i18n/index.js'
 import {
@@ -502,7 +502,16 @@ function DashboardContent({
   schoolProfile: SchoolProfile
   onChangeProfile: () => void
 }) {
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [selectedPeriod, setSelectedPeriod] = useState<AttendancePeriod>('year')
+  const logoutMutation = useMutation({
+    mutationFn: apiClient.logout,
+    onSuccess: () => {
+      queryClient.clear()
+      void navigate('/', { state: { reason: 'logged-out' } })
+    },
+  })
   const attendanceQuery = useQuery({
     queryKey: ATTENDANCE_QUERY_KEY,
     queryFn: apiClient.getAttendance,
@@ -523,7 +532,25 @@ function DashboardContent({
         <p className={styles['error']} role="alert">
           {message}
         </p>
-        <Link className={styles['textLink']} to="/">
+        <button
+          className={styles['secondaryButton']}
+          onClick={() => {
+            void attendanceQuery.refetch()
+          }}
+          type="button"
+        >
+          {t('dashboard.retry')}
+        </button>
+        <Link
+          className={styles['textLink']}
+          state={
+            attendanceQuery.error instanceof ApiClientError &&
+            attendanceQuery.error.code === 'UNAUTHENTICATED'
+              ? { reason: 'session-expired' }
+              : undefined
+          }
+          to="/"
+        >
           {t('dashboard.returnToLogin')}
         </Link>
       </section>
@@ -567,11 +594,29 @@ function DashboardContent({
           <button
             className={styles['secondaryButton']}
             onClick={onChangeProfile}
+            type="button"
           >
             {t('dashboard.changeSchoolType')}
           </button>
+          <button
+            className={styles['secondaryButton']}
+            disabled={logoutMutation.isPending}
+            onClick={() => {
+              logoutMutation.mutate()
+            }}
+            type="button"
+          >
+            {logoutMutation.isPending
+              ? t('dashboard.loggingOut')
+              : t('dashboard.logout')}
+          </button>
         </div>
       </header>
+      {logoutMutation.isError ? (
+        <p className={styles['error']} role="alert">
+          {t('dashboard.logoutError')}
+        </p>
+      ) : null}
 
       <p className={styles['presetNotice']}>
         {t('dashboard.activeProfile', {
