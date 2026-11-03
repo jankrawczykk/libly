@@ -109,6 +109,14 @@ Wartości domyślne i gotowe zestawy dla typów szkół to punkt wyjścia, a nie
 
 Ustawienia możesz wyeksportować do pliku JSON i zaimportować na innym komputerze. W pliku nie ma żadnych danych osobowych, więc można go bezpiecznie udostępnić koledze z tej samej szkoły. Zapisują się tylko w Twojej przeglądarce. Jeśli chcesz dodać gotowy zestaw dla swojej szkoły dla wszystkich, opisujemy to w sekcji o kontrybucji.
 
+## Zrzuty ekranu z trybu demo
+
+Poniższe obrazy pokazują aplikację na danych syntetycznych. Nie pochodzą z prawdziwego konta ucznia i nie zawierają danych osobowych.
+
+![Dashboard frekwencji w trybie demo](docs/screenshots/dashboard-demo.png)
+
+![Ustawienia szkoły w trybie demo](docs/screenshots/settings-demo.png)
+
 ## Struktura repozytorium
 
 ```
