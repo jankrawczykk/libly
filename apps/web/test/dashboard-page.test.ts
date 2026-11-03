@@ -163,6 +163,50 @@ test('uses saved thresholds to recalculate attendance statuses', () => {
   expect(markup).toContain('Poniżej progu krytycznego')
 })
 
+test('shows absence buffer and recovery guidance for each subject', () => {
+  const markup = renderDashboard()
+
+  expect(markup).toContain('Możesz jeszcze opuścić 0 lekcji.')
+  expect(markup).toContain(
+    'Musisz być obecny na kolejnych 1 lekcjach, aby wrócić do progu.',
+  )
+})
+
+test('shows unavailable guidance when a subject has no counted lessons', () => {
+  const markup = renderDashboard()
+
+  expect(markup).toContain('Nie można obliczyć zapasu — brak liczonych lekcji.')
+  expect(markup).toContain(
+    'Nie można obliczyć powrotu do progu — brak liczonych lekcji.',
+  )
+})
+
+test('explains unlimited buffer and impossible recovery boundaries', () => {
+  const unlimitedProfile = getSchoolProfilePreset('primary').profile
+  const unlimitedMarkup = renderDashboard({
+    ...unlimitedProfile,
+    attendance: {
+      ...unlimitedProfile.attendance,
+      criticalThreshold: 0,
+    },
+  })
+  const impossibleProfile = getSchoolProfilePreset('primary').profile
+  const impossibleMarkup = renderDashboard({
+    ...impossibleProfile,
+    attendance: {
+      ...impossibleProfile.attendance,
+      criticalThreshold: 100,
+    },
+  })
+
+  expect(unlimitedMarkup).toContain(
+    'Próg nie ogranicza liczby kolejnych nieobecności.',
+  )
+  expect(impossibleMarkup).toContain(
+    'Nie można wrócić do tego progu samą obecnością.',
+  )
+})
+
 test('shows status badges only in the configured attendance scope', () => {
   const preset = getSchoolProfilePreset('primary').profile
   const profile: SchoolProfile = {
