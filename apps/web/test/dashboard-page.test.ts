@@ -75,6 +75,31 @@ function renderDashboard(
   return markup
 }
 
+function renderFirstRunSetup() {
+  const queryClient = new QueryClient()
+  queryClient.setQueryData(['session'], { authenticated: true })
+  queryClient.setQueryData(['attendance'], ATTENDANCE_ENTRIES)
+  queryClient.setQueryData(['school-profile'], null)
+  const markup = renderToStaticMarkup(
+    createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      createElement(MemoryRouter, null, createElement(DashboardPage)),
+    ),
+  )
+  queryClient.clear()
+  return markup
+}
+
+test('starts the first-run profile wizard before showing attendance', () => {
+  const markup = renderFirstRunSetup()
+
+  expect(markup).toContain('Ustaw profil szkoły')
+  expect(markup).toContain('Krok 1 z 3')
+  expect(markup).toContain('Typ szkoły')
+  expect(markup).not.toContain('Frekwencja ogółem')
+})
+
 test('shows annual overall attendance and semesters from validated data', () => {
   const markup = renderDashboard()
 

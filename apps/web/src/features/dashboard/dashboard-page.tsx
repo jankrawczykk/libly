@@ -1,12 +1,19 @@
 import {
+  ATTENDANCE_KINDS,
+  AttendanceKindSchema,
   calculateAttendanceSummary,
   classifyAttendanceStatus,
   getSchoolProfilePreset,
+  SUBJECT_CATEGORIES,
+  SubjectCategorySchema,
   SchoolTypeSchema,
   SCHOOL_TYPES,
+  suggestSubjectCategory,
   type AttendancePeriodSummary,
   type AttendanceStatus,
+  type AttendanceKind,
   type SchoolProfile,
+  type SubjectCategory,
   type SchoolType,
 } from '@libly/core'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -41,6 +48,31 @@ const SCHOOL_TYPE_TRANSLATION_KEYS: Record<SchoolType, TranslationKey> = {
   vocational_stage2: 'school.vocationalStage2',
   post_secondary: 'school.postSecondary',
   other: 'school.other',
+}
+
+const ATTENDANCE_KIND_TRANSLATION_KEYS: Record<AttendanceKind, TranslationKey> =
+  {
+    present: 'settings.kindPresent',
+    late: 'settings.kindLate',
+    absent_unexcused: 'settings.kindAbsentUnexcused',
+    absent_excused: 'settings.kindAbsentExcused',
+    exempt: 'settings.kindExempt',
+    school_trip: 'settings.kindSchoolTrip',
+    other: 'settings.kindOther',
+  }
+
+const SUBJECT_CATEGORY_TRANSLATION_KEYS: Record<
+  SubjectCategory,
+  TranslationKey
+> = {
+  general: 'settings.categoryGeneral',
+  vocational: 'settings.categoryVocational',
+  practical_classes: 'settings.categoryPractical',
+  work_placement: 'settings.categoryPlacement',
+  physical_education: 'settings.categoryPhysicalEducation',
+  religion_ethics: 'settings.categoryReligionEthics',
+  behavior: 'settings.categoryBehavior',
+  custom: 'settings.categoryCustom',
 }
 
 const ATTENDANCE_STATUS_TRANSLATION_KEYS: Record<
@@ -132,14 +164,42 @@ function ProfileSetup({
 }: {
   onSaved: (profile: SchoolProfile) => void
 }) {
+  const attendanceQuery = useQuery({
+    queryKey: ATTENDANCE_QUERY_KEY,
+    queryFn: apiClient.getAttendance,
+  })
   const [selectedSchoolType, setSelectedSchoolType] = useState<SchoolType | ''>(
     '',
   )
+  const [step, setStep] = useState(1)
+  const [subjectCategories, setSubjectCategories] = useState<
+    Record<string, SubjectCategory | ''>
+  >({})
+  const [symbolMappings, setSymbolMappings] = useState<
+    Record<string, AttendanceKind | ''>
+  >({})
   const [saveError, setSaveError] = useState(false)
   const profilePreset =
     selectedSchoolType === ''
       ? undefined
       : getSchoolProfilePreset(selectedSchoolType)
+  const subjects =
+    attendanceQuery.data === undefined
+      ? []
+      : [...new Set(attendanceQuery.data.map((entry) => entry.subject))].sort(
+          (first, second) => first.localeCompare(second, 'pl'),
+        )
+  const symbols =
+    attendanceQuery.data === undefined
+      ? []
+      : [...new Set(attendanceQuery.data.map((entry) => entry.rawSymbol))].sort(
+          (first, second) => first.localeCompare(second, 'pl'),
+        )
+
+  function getCategory(subject: string): SubjectCategory | '' {
+    const suggestedCategory = suggestSubjectCategory(subject)
+    return subjectCategories[subject] ?? suggestedCategory ?? ''
+  }
 
   function submit(event: SyntheticEvent<HTMLFormElement>): void {
     event.preventDefault()
@@ -148,74 +208,288 @@ function ProfileSetup({
       return
     }
 
+    const confirmedSubjectRules: SchoolProfile['subjectRules'] = []
+    for (const subject of subjects) {
+      const categoryResult = SubjectCategorySchema.safeParse(
+        getCategory(subject),
+      )
+      if (!categoryResult.success) {
+        setSaveError(true)
+        return
+      }
+      confirmedSubjectRules.push({
+        subject,
+        category: categoryResult.data,
+        includeInOverallAverage: true,
+        includeInOverallAttendance: true,
+      })
+    }
+
+    const confirmedSymbols: [string, AttendanceKind][] = []
+    for (const symbol of symbols) {
+      const kindResult = AttendanceKindSchema.safeParse(symbolMappings[symbol])
+      if (!kindResult.success) {
+        setSaveError(true)
+        return
+      }
+      confirmedSymbols.push([symbol, kindResult.data])
+    }
+
+    if (confirmedSubjectRules.length !== subjects.length) {
+      setSaveError(true)
+      return
+    }
+
     try {
-      const profile = getSchoolProfilePreset(result.data).profile
+      const preset = getSchoolProfilePreset(result.data).profile
+      const profile = {
+        ...preset,
+        attendance: {
+          ...preset.attendance,
+          symbolMap: Object.fromEntries(confirmedSymbols),
+        },
+        subjectRules: confirmedSubjectRules,
+      }
       saveSchoolProfilePreference(window.localStorage, profile)
       onSaved(profile)
-    } catch {
-      setSaveError(true)
+    } catch (error) {
+      if (error instanceof DOMException) {
+        setSaveError(true)
+        return
+      }
+      throw error
     }
   }
 
+  if (attendanceQuery.isPending) {
+    return <p role="status">{t('dashboard.profileDataLoading')}</p>
+  }
+
+  if (attendanceQuery.isError) {
+    return (
+      <section className={styles['card']} aria-labelledby="profile-title">
+        <h2 id="profile-title" className={styles['sectionTitle']}>
+          {t('dashboard.profileSetupTitle')}
+        </h2>
+        <p className={styles['error']} role="alert">
+          {t('dashboard.profileDataLoadError')}
+        </p>
+        <button
+          className={styles['secondaryButton']}
+          onClick={() => {
+            void attendanceQuery.refetch()
+          }}
+          type="button"
+        >
+          {t('login.retry')}
+        </button>
+      </section>
+    )
+  }
+
+  const hasUnconfirmedCategories = subjects.some(
+    (subject) => getCategory(subject) === '',
+  )
+  const hasUnmappedSymbols = symbols.some(
+    (symbol) =>
+      symbolMappings[symbol] === undefined || symbolMappings[symbol] === '',
+  )
+
   return (
     <section className={styles['card']} aria-labelledby="profile-title">
-      <h2 id="profile-title" className={styles['sectionTitle']}>
+      <h1 id="profile-title" className={styles['sectionTitle']}>
         {t('dashboard.profileSetupTitle')}
-      </h2>
+      </h1>
       <p>{t('dashboard.profileSetupExplanation')}</p>
+      <p className={styles['stepIndicator']} aria-live="polite">
+        {t('dashboard.profileSetupStep', { step })}
+      </p>
       <form onSubmit={submit}>
-        <label className={styles['fieldLabel']} htmlFor="school-type">
-          {t('dashboard.schoolTypeLabel')}
-        </label>
-        <select
-          className={styles['select']}
-          id="school-type"
-          onChange={(event) => {
-            const result = SchoolTypeSchema.safeParse(event.currentTarget.value)
-            setSelectedSchoolType(result.success ? result.data : '')
-            setSaveError(false)
-          }}
-          required
-          value={selectedSchoolType}
-        >
-          <option value="" disabled>
-            {t('dashboard.schoolTypePlaceholder')}
-          </option>
-          {SCHOOL_TYPES.map((schoolType) => (
-            <option key={schoolType} value={schoolType}>
-              {t(SCHOOL_TYPE_TRANSLATION_KEYS[schoolType])}
-            </option>
-          ))}
-        </select>
+        {step === 1 ? (
+          <>
+            <label className={styles['fieldLabel']} htmlFor="school-type">
+              {t('dashboard.schoolTypeLabel')}
+            </label>
+            <select
+              className={styles['select']}
+              id="school-type"
+              onChange={(event) => {
+                const result = SchoolTypeSchema.safeParse(
+                  event.currentTarget.value,
+                )
+                setSelectedSchoolType(result.success ? result.data : '')
+                setSaveError(false)
+              }}
+              required
+              value={selectedSchoolType}
+            >
+              <option value="" disabled>
+                {t('dashboard.schoolTypePlaceholder')}
+              </option>
+              {SCHOOL_TYPES.map((schoolType) => (
+                <option key={schoolType} value={schoolType}>
+                  {t(SCHOOL_TYPE_TRANSLATION_KEYS[schoolType])}
+                </option>
+              ))}
+            </select>
 
-        {profilePreset === undefined ? null : (
-          <div className={styles['presetReview']} aria-live="polite">
-            <p className={styles['presetLabel']}>{profilePreset.label}</p>
-            <p>
-              {t('dashboard.presetThresholds', {
-                critical: profilePreset.profile.attendance.criticalThreshold,
-                warning: profilePreset.profile.attendance.warningThreshold,
-              })}
-            </p>
-            <p>{t('dashboard.presetScope')}</p>
-            <p className={styles['verifyNotice']}>
-              {t('dashboard.verifyPreset')}
-            </p>
-          </div>
-        )}
+            {profilePreset === undefined ? null : (
+              <div className={styles['presetReview']} aria-live="polite">
+                <p className={styles['presetLabel']}>{profilePreset.label}</p>
+                <p>
+                  {t('dashboard.presetThresholds', {
+                    critical:
+                      profilePreset.profile.attendance.criticalThreshold,
+                    warning: profilePreset.profile.attendance.warningThreshold,
+                  })}
+                </p>
+                <p>{t('dashboard.presetScope')}</p>
+                <p className={styles['verifyNotice']}>
+                  {t('dashboard.verifyPreset')}
+                </p>
+              </div>
+            )}
+          </>
+        ) : null}
+
+        {step === 2 ? (
+          <fieldset className={styles['wizardFieldset']}>
+            <legend className={styles['sectionTitle']}>
+              {t('dashboard.subjectCategoryTitle')}
+            </legend>
+            <p>{t('dashboard.subjectCategoryExplanation')}</p>
+            {subjects.length === 0 ? (
+              <p>{t('dashboard.noSubjectsToConfirm')}</p>
+            ) : (
+              subjects.map((subject) => (
+                <div className={styles['wizardRow']} key={subject}>
+                  <label
+                    className={styles['fieldLabel']}
+                    htmlFor={`category-${subject}`}
+                  >
+                    {subject}
+                  </label>
+                  <select
+                    className={styles['select']}
+                    id={`category-${subject}`}
+                    onChange={(event) => {
+                      const result = SubjectCategorySchema.safeParse(
+                        event.currentTarget.value,
+                      )
+                      if (result.success) {
+                        setSubjectCategories((current) => ({
+                          ...current,
+                          [subject]: result.data,
+                        }))
+                      }
+                    }}
+                    value={getCategory(subject)}
+                  >
+                    <option value="">
+                      {t('dashboard.categoryPlaceholder')}
+                    </option>
+                    {SUBJECT_CATEGORIES.map((category) => (
+                      <option key={category} value={category}>
+                        {t(SUBJECT_CATEGORY_TRANSLATION_KEYS[category])}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ))
+            )}
+          </fieldset>
+        ) : null}
+
+        {step === 3 ? (
+          <fieldset className={styles['wizardFieldset']}>
+            <legend className={styles['sectionTitle']}>
+              {t('dashboard.attendanceSymbolTitle')}
+            </legend>
+            <p>{t('dashboard.attendanceSymbolExplanation')}</p>
+            {symbols.length === 0 ? (
+              <p>{t('dashboard.noSymbolsToMap')}</p>
+            ) : (
+              symbols.map((symbol) => (
+                <div className={styles['wizardRow']} key={symbol}>
+                  <label
+                    className={styles['fieldLabel']}
+                    htmlFor={`symbol-${symbol}`}
+                  >
+                    {symbol}
+                  </label>
+                  <select
+                    className={styles['select']}
+                    id={`symbol-${symbol}`}
+                    onChange={(event) => {
+                      const result = AttendanceKindSchema.safeParse(
+                        event.currentTarget.value,
+                      )
+                      if (result.success) {
+                        setSymbolMappings((current) => ({
+                          ...current,
+                          [symbol]: result.data,
+                        }))
+                      }
+                    }}
+                    value={symbolMappings[symbol] ?? ''}
+                  >
+                    <option value="">{t('dashboard.symbolPlaceholder')}</option>
+                    {ATTENDANCE_KINDS.map((kind) => (
+                      <option key={kind} value={kind}>
+                        {t(ATTENDANCE_KIND_TRANSLATION_KEYS[kind])}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ))
+            )}
+          </fieldset>
+        ) : null}
 
         {saveError ? (
           <p className={styles['error']} role="alert">
             {t('dashboard.profileSaveError')}
           </p>
         ) : null}
-        <button
-          className={styles['primaryButton']}
-          disabled={selectedSchoolType === ''}
-          type="submit"
-        >
-          {t('dashboard.confirmProfile')}
-        </button>
+        <div className={styles['wizardActions']}>
+          {step > 1 ? (
+            <button
+              className={styles['secondaryButton']}
+              onClick={() => {
+                setStep((current) => current - 1)
+                setSaveError(false)
+              }}
+              type="button"
+            >
+              {t('dashboard.profileSetupBack')}
+            </button>
+          ) : null}
+          {step < 3 ? (
+            <button
+              className={styles['primaryButton']}
+              disabled={
+                step === 1
+                  ? selectedSchoolType === ''
+                  : hasUnconfirmedCategories
+              }
+              onClick={() => {
+                setStep((current) => current + 1)
+                setSaveError(false)
+              }}
+              type="button"
+            >
+              {t('dashboard.profileSetupNext')}
+            </button>
+          ) : (
+            <button
+              className={styles['primaryButton']}
+              disabled={hasUnmappedSymbols}
+              type="submit"
+            >
+              {t('dashboard.confirmProfile')}
+            </button>
+          )}
+        </div>
       </form>
     </section>
   )

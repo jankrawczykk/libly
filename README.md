@@ -77,7 +77,7 @@ Port możesz zmienić zmienną środowiskową `PORT`. Domyślny adres nasłuchu 
 
 ### Tryb demo
 
-Na ekranie logowania wybierz przycisk trybu demo. Aplikacja pokaże sztuczne dane i nie połączy się z Librusem. Przy pierwszym wejściu na dashboard wybierz typ szkoły i sprawdź typowe wartości profilu w statucie swojej szkoły; presety nie są poradą prawną. Tryb demo jest też bezpiecznym sposobem na wypróbowanie aplikacji oraz na tworzenie zrzutów ekranu do zgłoszeń. Logowanie do Librusa nie jest jeszcze dostępne; nie wpisuj loginu ani hasła w aplikacji.
+Na ekranie logowania wybierz przycisk trybu demo. Aplikacja pokaże sztuczne dane i nie połączy się z Librusem. Przy pierwszym wejściu na dashboard kreator poprosi o typ szkoły, potwierdzenie kategorii przedmiotów i przypisanie każdego wykrytego symbolu frekwencji; nieznane symbole nie są zgadywane. Sprawdź typowe wartości profilu w statucie swojej szkoły; presety nie są poradą prawną. Tryb demo jest też bezpiecznym sposobem na wypróbowanie aplikacji oraz na tworzenie zrzutów ekranu do zgłoszeń. Logowanie do Librusa nie jest jeszcze dostępne; nie wpisuj loginu ani hasła w aplikacji.
 
 ## Ustawienia szkoły
 
@@ -94,7 +94,7 @@ Szkoły różnią się zasadami, więc Libly niczego nie zakłada na sztywno. Pr
 | Spóźnienie jako obecność | tak | Czy spóźnienie liczy się jako obecność |
 | Nieobecność usprawiedliwiona jako obecność | nie | Zależy od statutu, sprawdź go |
 | Pomijane rodzaje wpisów | zwolnienia, wycieczki | Te wpisy nie wchodzą do wyliczeń |
-| Symbole frekwencji | typowe symbole Librusa | Jeśli Twoja szkoła ma własne symbole, przypiszesz je ręcznie do rodzajów wpisów |
+| Symbole frekwencji | wymagają potwierdzenia | Kreator i ustawienia pozwalają ręcznie przypisać każdy symbol do rodzaju wpisu; Libly nie zgaduje nieznanych symboli |
 | Semestry lub trymestry | dwa semestry | Daty możesz zmienić |
 | Kategoria przedmiotu | sugerowana automatycznie, wymaga potwierdzenia | Ogólny, zawodowy, zajęcia praktyczne, praktyki zawodowe, wychowanie fizyczne, religia lub etyka, zachowanie. Możesz poprawić każdą sugestię; nierozpoznane nazwy nie dostają kategorii automatycznie. |
 | Progi dla pojedynczego przedmiotu | brak | Możesz ustawić inny próg dla wybranego przedmiotu, na przykład dla praktyk |
