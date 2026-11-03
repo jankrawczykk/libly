@@ -10,12 +10,24 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:5173',
     trace: 'on-first-retry',
   },
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://127.0.0.1:5173',
-    reuseExistingServer: !process.env['CI'],
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      command: 'npm run dev',
+      url: 'http://127.0.0.1:5173',
+      reuseExistingServer: !process.env['CI'],
+      timeout: 120_000,
+    },
+    {
+      command: 'npm run build && npm start',
+      url: 'http://127.0.0.1:3001',
+      reuseExistingServer: !process.env['CI'],
+      timeout: 120_000,
+      env: {
+        ...process.env,
+        PORT: '3001',
+      },
+    },
+  ],
   projects: [
     {
       name: 'chromium',
@@ -27,13 +39,7 @@ export default defineConfig({
       testMatch: '**/production.spec.ts',
       use: {
         ...devices['Desktop Chrome'],
-        baseURL: 'http://127.0.0.1:3000',
-      },
-      webServer: {
-        command: 'npm run build && npm start',
-        url: 'http://127.0.0.1:3000',
-        reuseExistingServer: !process.env['CI'],
-        timeout: 120_000,
+        baseURL: 'http://127.0.0.1:3001',
       },
     },
   ],
