@@ -3,6 +3,7 @@ import {
   AttendanceKindSchema,
   calculateAbsenceBuffer,
   calculateAttendanceSummary,
+  calculateAttendanceTrend,
   calculateRecoveryRequirement,
   classifyAttendanceStatus,
   simulateAttendance,
@@ -13,6 +14,7 @@ import {
   SCHOOL_TYPES,
   suggestSubjectCategory,
   type AttendancePeriodSummary,
+  type AttendanceTrendPoint,
   type AttendanceStatus,
   type AttendanceKind,
   type AbsenceBuffer,
@@ -175,6 +177,61 @@ function AttendanceGuidance({
       <p>{bufferMessage}</p>
       <p>{recoveryMessage}</p>
     </div>
+  )
+}
+
+function AttendanceTrendChart({
+  points,
+  subject,
+}: {
+  points: readonly AttendanceTrendPoint[]
+  subject: string
+}) {
+  const chartPoints = points.filter(
+    (point): point is AttendanceTrendPoint & { percentage: number } =>
+      point.percentage !== null,
+  )
+  const chartWidth = 240
+  const chartHeight = 100
+  const plottedPoints = chartPoints.map((point, index) => {
+    const x =
+      chartPoints.length === 1
+        ? chartWidth / 2
+        : (index / (chartPoints.length - 1)) * chartWidth
+    const y = chartHeight - (point.percentage / 100) * chartHeight
+    return `${String(x)},${String(y)}`
+  })
+
+  return (
+    <figure className={styles['trendChart']}>
+      <figcaption>{t('dashboard.trendTitle', { subject })}</figcaption>
+      {chartPoints.length === 0 ? (
+        <p>{t('dashboard.trendNoData')}</p>
+      ) : (
+        <>
+          <svg
+            aria-label={t('dashboard.trendAccessible', { subject })}
+            className={styles['trendSvg']}
+            role="img"
+            viewBox={`0 0 ${String(chartWidth)} ${String(chartHeight)}`}
+          >
+            <polyline
+              className={styles['trendLine']}
+              fill="none"
+              points={plottedPoints.join(' ')}
+              vectorEffect="non-scaling-stroke"
+            />
+          </svg>
+          <ol className={styles['trendData']}>
+            {chartPoints.map((point) => (
+              <li key={point.date}>
+                {point.date}: {formatPercentage(point.percentage)}
+              </li>
+            ))}
+          </ol>
+        </>
+      )}
+    </figure>
   )
 }
 
@@ -628,6 +685,13 @@ function DashboardContent({
       first.subject.localeCompare(second.subject, 'pl')
     )
   })
+  const trendEntries =
+    selectedPeriod === 'year'
+      ? attendanceQuery.data
+      : attendanceQuery.data.filter(
+          (entry) =>
+            entry.semester === (selectedPeriod === 'semester1' ? 1 : 2),
+        )
 
   return (
     <>
@@ -787,6 +851,14 @@ function DashboardContent({
                       subject[selectedPeriod],
                       getSubjectThreshold(schoolProfile, subject.subject),
                     )}
+                  />
+                  <AttendanceTrendChart
+                    points={calculateAttendanceTrend(
+                      trendEntries,
+                      schoolProfile,
+                      subject.subject,
+                    )}
+                    subject={subject.subject}
                   />
                   <div className={styles['simulator']}>
                     <h4>{t('dashboard.simulatorTitle')}</h4>

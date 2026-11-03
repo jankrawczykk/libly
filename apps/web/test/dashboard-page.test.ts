@@ -124,6 +124,14 @@ test('shows the what-if attendance simulator for each subject', () => {
   expect(markup).toContain('Po zmianie: 50%')
 })
 
+test('shows an accessible attendance trend and its data points', () => {
+  const markup = renderDashboard()
+
+  expect(markup).toContain('Trend frekwencji — Historia')
+  expect(markup).toContain('Wykres trendu frekwencji dla przedmiotu Historia')
+  expect(markup).toContain('2026-09-03: 50%')
+})
+
 test('orders subjects from lowest attendance to highest', () => {
   const markup = renderDashboard()
   const chemistryPosition = markup.indexOf('Chemia')

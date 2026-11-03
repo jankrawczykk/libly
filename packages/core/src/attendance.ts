@@ -49,6 +49,10 @@ export interface AttendanceSimulationInput {
   additionalAbsentLessons: number
 }
 
+export interface AttendanceTrendPoint extends AttendancePercentage {
+  date: string
+}
+
 export interface AttendancePeriodSummary {
   year: AttendancePercentage
   semester1: AttendancePercentage
@@ -280,4 +284,60 @@ export function calculateAttendanceSummary(
       ...summarizePeriods(subjectEntries),
     })),
   }
+}
+
+export function calculateAttendanceTrend(
+  entries: readonly AttendanceEntry[],
+  profile: Pick<SchoolProfile, 'attendance' | 'subjectRules'>,
+  subject: string,
+): AttendanceTrendPoint[] {
+  const excludedKinds = new Set(profile.attendance.excludedKinds)
+  const countLateAsPresent = profile.attendance.countLateAsPresent
+  const countExcusedAsPresent = profile.attendance.countExcusedAsPresent
+  const subjectEntries = entries
+    .filter((entry) => entry.subject === subject)
+    .sort((first, second) => first.date.localeCompare(second.date))
+
+  let presentLessons = 0
+  let countedLessons = 0
+  const points: AttendanceTrendPoint[] = []
+  let currentDate: string | undefined
+
+  for (const entry of subjectEntries) {
+    if (currentDate !== undefined && entry.date !== currentDate) {
+      points.push({
+        date: currentDate,
+        presentLessons,
+        countedLessons,
+        percentage:
+          countedLessons === 0 ? null : (presentLessons / countedLessons) * 100,
+      })
+    }
+    currentDate = entry.date
+
+    if (excludedKinds.has(entry.kind)) {
+      continue
+    }
+
+    countedLessons += 1
+    if (
+      entry.kind === 'present' ||
+      (entry.kind === 'late' && countLateAsPresent) ||
+      (entry.kind === 'absent_excused' && countExcusedAsPresent)
+    ) {
+      presentLessons += 1
+    }
+  }
+
+  if (currentDate !== undefined) {
+    points.push({
+      date: currentDate,
+      presentLessons,
+      countedLessons,
+      percentage:
+        countedLessons === 0 ? null : (presentLessons / countedLessons) * 100,
+    })
+  }
+
+  return points
 }

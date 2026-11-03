@@ -5,6 +5,7 @@ import {
   calculateAbsenceBuffer,
   calculateAttendanceSummary,
   calculateRecoveryRequirement,
+  calculateAttendanceTrend,
   getSchoolProfilePreset,
   simulateAttendance,
 } from '../src/index.js'
@@ -235,6 +236,7 @@ describe('calculateAttendanceSummary', () => {
       countedLessons: 4,
       percentage: 50,
     })
+
     expect(summary.overall.semester1).toEqual({
       presentLessons: 1,
       countedLessons: 2,
@@ -326,6 +328,66 @@ describe('calculateAttendanceSummary', () => {
       presentLessons: 1,
       countedLessons: 1,
       percentage: 100,
+    })
+  })
+
+  describe('calculateAttendanceTrend', () => {
+    test('returns cumulative points by date for one subject', () => {
+      expect(
+        calculateAttendanceTrend(
+          [
+            entry({ date: '2026-09-02', kind: 'absent_unexcused' }),
+            entry({ date: '2026-09-01', kind: 'present' }),
+            entry({
+              date: '2026-09-02',
+              lessonNumber: 2,
+              kind: 'present',
+            }),
+          ],
+          profile,
+          'Matematyka',
+        ),
+      ).toEqual([
+        {
+          date: '2026-09-01',
+          presentLessons: 1,
+          countedLessons: 1,
+          percentage: 100,
+        },
+        {
+          date: '2026-09-02',
+          presentLessons: 2,
+          countedLessons: 3,
+          percentage: (2 / 3) * 100,
+        },
+      ])
+    })
+
+    test('excludes configured kinds and ignores other subjects', () => {
+      expect(
+        calculateAttendanceTrend(
+          [
+            entry({ kind: 'exempt' }),
+            entry({ kind: 'present', subject: 'Historia' }),
+            entry({ date: '2026-09-02', kind: 'absent_unexcused' }),
+          ],
+          profile,
+          'Matematyka',
+        ),
+      ).toEqual([
+        {
+          date: '2026-09-01',
+          presentLessons: 0,
+          countedLessons: 0,
+          percentage: null,
+        },
+        {
+          date: '2026-09-02',
+          presentLessons: 0,
+          countedLessons: 1,
+          percentage: 0,
+        },
+      ])
     })
   })
 
