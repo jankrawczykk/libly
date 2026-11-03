@@ -35,9 +35,17 @@ test('completes the demo journey from login to logout', async ({ page }) => {
   await expect(
     page.getByRole('heading', { name: /Frekwencja ogółem/u }),
   ).toBeVisible()
+  await page.screenshot({
+    path: 'docs/screenshots/dashboard-demo.png',
+    fullPage: true,
+  })
 
   await page.getByRole('link', { name: 'Ustawienia szkoły' }).click()
   await expect(page).toHaveURL(/\/settings$/u)
+  await page.screenshot({
+    path: 'docs/screenshots/settings-demo.png',
+    fullPage: true,
+  })
   await page.getByLabel('Próg krytyczny (procent)').fill('99')
   await page.getByLabel('Próg ostrzegawczy (procent)').fill('100')
   await page.getByRole('button', { name: 'Zapisz ustawienia' }).click()
