@@ -6,7 +6,9 @@ import { expect, test } from 'vitest'
 import { createQueryClient } from '../src/app/query-client.js'
 import { LoginPage } from '../src/features/login/login-page.js'
 
-test('explains local demo privacy and does not request unavailable credentials', () => {
+function renderLogin(
+  initialEntries: Parameters<typeof MemoryRouter>[0]['initialEntries'] = ['/'],
+) {
   const queryClient = createQueryClient()
   queryClient.setQueryData(['session'], { authenticated: false })
 
@@ -14,9 +16,15 @@ test('explains local demo privacy and does not request unavailable credentials',
     createElement(
       QueryClientProvider,
       { client: queryClient },
-      createElement(MemoryRouter, null, createElement(LoginPage)),
+      createElement(MemoryRouter, { initialEntries }, createElement(LoginPage)),
     ),
   )
+  queryClient.clear()
+  return markup
+}
+
+test('explains local demo privacy and does not request unavailable credentials', () => {
+  const markup = renderLogin()
 
   expect(markup).toContain('Twoja prywatność')
   expect(markup).toContain('danych syntetycznych')
@@ -24,5 +32,20 @@ test('explains local demo privacy and does not request unavailable credentials',
   expect(markup).toContain('Logowanie do Librusa nie jest jeszcze dostępne')
   expect(markup).toContain('Nie wpisuj tu loginu ani hasła')
   expect(markup).not.toContain('<input')
-  queryClient.clear()
+})
+
+test('explains why the user returned to login after session expiry', () => {
+  const markup = renderLogin([
+    { pathname: '/', state: { reason: 'session-expired' } },
+  ])
+
+  expect(markup).toContain('Sesja wygasła. Zaloguj się ponownie.')
+})
+
+test('confirms a deliberate logout', () => {
+  const markup = renderLogin([
+    { pathname: '/', state: { reason: 'logged-out' } },
+  ])
+
+  expect(markup).toContain('Wylogowano bezpiecznie.')
 })

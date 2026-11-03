@@ -10,9 +10,9 @@ import {
   type SchoolProfile,
   type SubjectCategory,
 } from '@libly/core'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useId, useRef, useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client.js'
 import { t, type TranslationKey } from '../../i18n/index.js'
 import {
@@ -1118,6 +1118,15 @@ function SettingsForm({ initialProfile }: { initialProfile: SchoolProfile }) {
 }
 
 export function SettingsPage() {
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const logoutMutation = useMutation({
+    mutationFn: apiClient.logout,
+    onSuccess: () => {
+      queryClient.clear()
+      void navigate('/', { state: { reason: 'logged-out' } })
+    },
+  })
   const sessionQuery = useQuery({
     queryKey: SESSION_QUERY_KEY,
     queryFn: apiClient.getSession,
@@ -1152,6 +1161,15 @@ export function SettingsPage() {
         <p className={styles['error']} role="alert">
           {t('settings.profileLoadError')}
         </p>
+        <button
+          className={styles['button']}
+          onClick={() => {
+            void profileQuery.refetch()
+          }}
+          type="button"
+        >
+          {t('settings.retry')}
+        </button>
         <Link className={styles['link']} to="/dashboard">
           {t('settings.backToDashboard')}
         </Link>
@@ -1174,7 +1192,24 @@ export function SettingsPage() {
         <Link className={styles['link']} to="/dashboard">
           {t('settings.backToDashboard')}
         </Link>
+        <button
+          className={styles['button']}
+          disabled={logoutMutation.isPending}
+          onClick={() => {
+            logoutMutation.mutate()
+          }}
+          type="button"
+        >
+          {logoutMutation.isPending
+            ? t('settings.loggingOut')
+            : t('settings.logout')}
+        </button>
       </header>
+      {logoutMutation.isError ? (
+        <p className={styles['error']} role="alert">
+          {t('settings.logoutError')}
+        </p>
+      ) : null}
       <SettingsForm initialProfile={profileQuery.data} />
     </main>
   )

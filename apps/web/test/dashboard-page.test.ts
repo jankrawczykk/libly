@@ -109,6 +109,7 @@ test('shows annual overall attendance and semesters from validated data', () => 
   expect(markup).toContain('Semestr 1')
   expect(markup).toContain('Semestr 2')
   expect(markup).toContain('role="group" aria-label="Wybierz okres frekwencji"')
+  expect(markup).toContain('Wyloguj')
   expect(markup).toMatch(/aria-pressed="true"[^>]*>Cały rok<\/button>/u)
   expect(markup).toMatch(/aria-pressed="false"[^>]*>Semestr 1<\/button>/u)
   expect(markup).toMatch(/aria-pressed="false"[^>]*>Semestr 2<\/button>/u)
