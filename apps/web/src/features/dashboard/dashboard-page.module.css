@@ -306,6 +306,36 @@
   margin: 0;
 }
 
+.simulator {
+  display: grid;
+  grid-template-columns: auto 5rem;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-small);
+  text-align: left;
+}
+
+.simulator h4,
+.simulator p {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.numberInput {
+  width: 5rem;
+  min-height: 2rem;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  color: var(--color-text);
+  background: var(--color-surface);
+  font: inherit;
+}
+
 .error {
   color: var(--color-error);
 }

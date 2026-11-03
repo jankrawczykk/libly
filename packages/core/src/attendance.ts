@@ -44,6 +44,11 @@ export interface AttendancePercentage {
   percentage: number | null
 }
 
+export interface AttendanceSimulationInput {
+  additionalPresentLessons: number
+  additionalAbsentLessons: number
+}
+
 export interface AttendancePeriodSummary {
   year: AttendancePercentage
   semester1: AttendancePercentage
@@ -100,6 +105,44 @@ function validateAttendanceCounts({
     throw new RangeError(
       'Attendance lesson counts must be non-negative integers with present lessons no greater than counted lessons',
     )
+  }
+}
+
+function validateSimulationInput({
+  additionalPresentLessons,
+  additionalAbsentLessons,
+}: AttendanceSimulationInput): void {
+  if (
+    !Number.isInteger(additionalPresentLessons) ||
+    !Number.isInteger(additionalAbsentLessons) ||
+    additionalPresentLessons < 0 ||
+    additionalAbsentLessons < 0
+  ) {
+    throw new RangeError(
+      'Simulated lesson counts must be non-negative integers',
+    )
+  }
+}
+
+export function simulateAttendance(
+  attendance: AttendanceCounts,
+  simulation: AttendanceSimulationInput,
+): AttendancePercentage {
+  validateAttendanceCounts(attendance)
+  validateSimulationInput(simulation)
+
+  const countedLessons =
+    attendance.countedLessons +
+    simulation.additionalPresentLessons +
+    simulation.additionalAbsentLessons
+  const presentLessons =
+    attendance.presentLessons + simulation.additionalPresentLessons
+
+  return {
+    presentLessons,
+    countedLessons,
+    percentage:
+      countedLessons === 0 ? null : (presentLessons / countedLessons) * 100,
   }
 }
 

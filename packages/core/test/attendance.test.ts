@@ -6,6 +6,7 @@ import {
   calculateAttendanceSummary,
   calculateRecoveryRequirement,
   getSchoolProfilePreset,
+  simulateAttendance,
 } from '../src/index.js'
 
 const profile = getSchoolProfilePreset('other').profile
@@ -58,6 +59,43 @@ describe('classifyAttendanceStatus', () => {
         attendanceWarningThreshold: 55,
       }),
     ).toBe('ok')
+  })
+})
+
+describe('simulateAttendance', () => {
+  test('applies hypothetical presents and absences to the current counts', () => {
+    expect(
+      simulateAttendance(
+        { presentLessons: 6, countedLessons: 10 },
+        { additionalPresentLessons: 2, additionalAbsentLessons: 1 },
+      ),
+    ).toEqual({
+      presentLessons: 8,
+      countedLessons: 13,
+      percentage: (8 / 13) * 100,
+    })
+  })
+
+  test('returns null for a simulation with no counted lessons', () => {
+    expect(
+      simulateAttendance(
+        { presentLessons: 0, countedLessons: 0 },
+        { additionalPresentLessons: 0, additionalAbsentLessons: 0 },
+      ),
+    ).toEqual({
+      presentLessons: 0,
+      countedLessons: 0,
+      percentage: null,
+    })
+  })
+
+  test('rejects invalid simulated lesson counts', () => {
+    expect(() =>
+      simulateAttendance(
+        { presentLessons: 1, countedLessons: 2 },
+        { additionalPresentLessons: -1, additionalAbsentLessons: 0 },
+      ),
+    ).toThrow(RangeError)
   })
 })
 
