@@ -115,6 +115,15 @@ test('shows annual overall attendance and semesters from validated data', () => 
   expect(markup).toMatch(/aria-pressed="false"[^>]*>Semestr 2<\/button>/u)
 })
 
+test('shows the what-if attendance simulator for each subject', () => {
+  const markup = renderDashboard()
+
+  expect(markup).toContain('Symulator „co jeśli?”')
+  expect(markup).toContain('Dodatkowe nieobecności')
+  expect(markup).toContain('Dodatkowe obecności')
+  expect(markup).toContain('Po zmianie: 50%')
+})
+
 test('orders subjects from lowest attendance to highest', () => {
   const markup = renderDashboard()
   const chemistryPosition = markup.indexOf('Chemia')

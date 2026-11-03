@@ -5,6 +5,7 @@ import {
   calculateAttendanceSummary,
   calculateRecoveryRequirement,
   classifyAttendanceStatus,
+  simulateAttendance,
   getSchoolProfilePreset,
   SUBJECT_CATEGORIES,
   SubjectCategorySchema,
@@ -550,6 +551,9 @@ function DashboardContent({
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [selectedPeriod, setSelectedPeriod] = useState<AttendancePeriod>('year')
+  const [simulation, setSimulation] = useState<
+    Record<string, { present: number; absent: number }>
+  >({})
   const logoutMutation = useMutation({
     mutationFn: apiClient.logout,
     onSuccess: () => {
@@ -784,6 +788,73 @@ function DashboardContent({
                       getSubjectThreshold(schoolProfile, subject.subject),
                     )}
                   />
+                  <div className={styles['simulator']}>
+                    <h4>{t('dashboard.simulatorTitle')}</h4>
+                    <label htmlFor={`simulate-absent-${subject.subject}`}>
+                      {t('dashboard.simulatorAbsent')}
+                    </label>
+                    <input
+                      className={styles['numberInput']}
+                      id={`simulate-absent-${subject.subject}`}
+                      min="0"
+                      onChange={(event) => {
+                        const absent = Number(event.currentTarget.value)
+                        setSimulation((current) => ({
+                          ...current,
+                          [subject.subject]: {
+                            ...(current[subject.subject] ?? {
+                              present: 0,
+                              absent: 0,
+                            }),
+                            absent:
+                              Number.isInteger(absent) && absent >= 0
+                                ? absent
+                                : 0,
+                          },
+                        }))
+                      }}
+                      type="number"
+                      value={simulation[subject.subject]?.absent ?? 0}
+                    />
+                    <label htmlFor={`simulate-present-${subject.subject}`}>
+                      {t('dashboard.simulatorPresent')}
+                    </label>
+                    <input
+                      className={styles['numberInput']}
+                      id={`simulate-present-${subject.subject}`}
+                      min="0"
+                      onChange={(event) => {
+                        const present = Number(event.currentTarget.value)
+                        setSimulation((current) => ({
+                          ...current,
+                          [subject.subject]: {
+                            ...(current[subject.subject] ?? {
+                              present: 0,
+                              absent: 0,
+                            }),
+                            present:
+                              Number.isInteger(present) && present >= 0
+                                ? present
+                                : 0,
+                          },
+                        }))
+                      }}
+                      type="number"
+                      value={simulation[subject.subject]?.present ?? 0}
+                    />
+                    <p>
+                      {t('dashboard.simulatorResult', {
+                        percentage: formatPercentage(
+                          simulateAttendance(subject[selectedPeriod], {
+                            additionalAbsentLessons:
+                              simulation[subject.subject]?.absent ?? 0,
+                            additionalPresentLessons:
+                              simulation[subject.subject]?.present ?? 0,
+                          }).percentage,
+                        ),
+                      })}
+                    </p>
+                  </div>
                 </div>
               </li>
             ))}
