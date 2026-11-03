@@ -18,12 +18,13 @@
     "lint": "npm run build --workspace=@libly/core && eslint apps packages",
     "typecheck": "npm run build --workspace=@libly/core && tsc --noEmit --project apps/server/tsconfig.json && tsc --noEmit --project apps/web/tsconfig.json && tsc --noEmit --project packages/core/tsconfig.json",
     "test": "npm run build --workspace=@libly/core && vitest run",
-    "test:e2e": "node -e \"console.log('E2E tests are a placeholder; Playwright demo-mode coverage is scheduled for a later milestone.')\"",
+    "test:e2e": "playwright test",
     "check": "npm run lint && npm run typecheck && npm test && npm audit --audit-level=high && npm run check:env",
     "check:env": "node scripts/check-env.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.1",
     "@types/node": "24.19.2",
     "eslint": "10.14.0",
     "prettier": "3.9.10",
