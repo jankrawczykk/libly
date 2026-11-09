@@ -33,6 +33,6 @@
     "vitest": "5.0.5"
   },
   "dependencies": {
-    "@fastify/static": "10.1.8"
+    "@fastify/static": "10.1.10"
   }
 }
